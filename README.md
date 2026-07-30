@@ -23,33 +23,73 @@ you have open:
 
 ## Install
 
+Pick whichever line matches your machine, paste it into a terminal, press enter.
+Works with both the Claude Code CLI and the desktop app. Git is not required.
+
+**Windows** (PowerShell):
+
+```powershell
+irm https://raw.githubusercontent.com/namit-jpg/presales-agent-skill/main/install.ps1 | iex
+```
+
+**macOS / Linux**:
+
 ```bash
-/plugin marketplace add namit-jpg/presales-agent-skill
+curl -fsSL https://raw.githubusercontent.com/namit-jpg/presales-agent-skill/main/install.sh | bash
+```
+
+Then restart Claude Code. That's it — the installer downloads the skill to
+`~/.claude/skills/presales-agent` and installs the one dependency the Excel export
+needs. Any previous install is moved aside to a timestamped backup rather than
+overwritten.
+
+Prefer to read a script before running it? Download
+[install.ps1](install.ps1) / [install.sh](install.sh), open it, then run it locally.
+
+### Without a terminal
+
+1. [Download the repository as a ZIP](https://github.com/namit-jpg/presales-agent-skill/archive/refs/heads/main.zip)
+   and extract it.
+2. Copy the folder `plugins/presales-agent/skills/presales-agent` into your skills
+   directory, so that `SKILL.md` ends up at:
+   - Windows — `%USERPROFILE%\.claude\skills\presales-agent\SKILL.md`
+   - macOS / Linux — `~/.claude/skills/presales-agent/SKILL.md`
+3. Restart Claude Code.
+
+Excel export needs Node 18+ and one package. Claude will offer to run this on first
+use, or you can run it yourself:
+
+```bash
+npm install --prefix "~/.claude/skills/presales-agent/scripts"
+```
+
+Without it, everything still works — you get JSON instead of XLSX.
+
+### As a managed plugin
+
+This repo is also a plugin marketplace, which adds versioning and one-command
+updates. From any terminal:
+
+```bash
+claude plugin marketplace add namit-jpg/presales-agent-skill
 ```
 
 ```bash
-/plugin install presales-agent@presales-skills
+claude plugin install presales-agent@presales-skills
 ```
 
-The Excel generator needs one dependency. On first use, install it inside the
-installed plugin's `skills/presales-agent/scripts` directory:
+Inside a Claude Code CLI session you can use the interactive equivalents,
+`/plugin marketplace add namit-jpg/presales-agent-skill` then `/plugin install`.
+Later, `claude plugin marketplace update presales-skills` pulls the newest version.
+
+### Uninstall
 
 ```bash
-npm install --prefix "<SKILL_DIR>/scripts"
+rm -rf ~/.claude/skills/presales-agent
 ```
 
-`<SKILL_DIR>` is the directory holding `SKILL.md` — for a plugin install that is
-`${CLAUDE_PLUGIN_ROOT}/skills/presales-agent`. Claude will resolve and run this for
-you if the dependency is missing. Node 18+ recommended.
-
-### Manual install (no plugin system)
-
-```bash
-git clone https://github.com/namit-jpg/presales-agent-skill.git
-```
-
-Then copy `plugins/presales-agent/skills/presales-agent` to
-`~/.claude/skills/presales-agent` and run the `npm install` above.
+Windows: `Remove-Item -Recurse -Force "$HOME\.claude\skills\presales-agent"`.
+If you installed the plugin instead: `claude plugin uninstall presales-agent`.
 
 ## Use
 
