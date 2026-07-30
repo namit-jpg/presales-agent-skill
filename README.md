@@ -91,6 +91,20 @@ them to your own delivery history before quoting a client.
 Engagement outputs are written to your project, never into this repo, and
 `opportunities/` is gitignored so client data does not get committed by accident.
 
+### On the `xlsx` dependency
+
+`npm audit` reports two high-severity advisories against `xlsx@0.18.5`
+([prototype pollution](https://github.com/advisories/GHSA-4r6h-8v6p-xvw6),
+[ReDoS](https://github.com/advisories/GHSA-5pgg-2g8v-p4x9)) and says no fix is
+available. That is because SheetJS no longer publishes to the npm registry —
+patched releases are distributed from `cdn.sheetjs.com`.
+
+Both advisories concern *parsing* untrusted spreadsheets. `generate_xlsx.js` only
+writes workbooks from JSON produced earlier in the workflow and never reads a
+third-party file, so the vulnerable code paths are not exercised here. If your
+organisation blocks the advisory regardless, point the dependency at the SheetJS
+CDN build instead.
+
 ## Licence
 
 MIT — see [LICENSE](LICENSE).
