@@ -1,0 +1,9 @@
+{
+  "name": "presales-agent-skill-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "xlsx generator used by the presales-agent Claude Code skill",
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}

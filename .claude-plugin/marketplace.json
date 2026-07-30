@@ -1,0 +1,19 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "presales-skills",
+  "description": "Salesforce presales and solutioning skills for Claude Code",
+  "owner": {
+    "name": "namit-jpg"
+  },
+  "plugins": [
+    {
+      "name": "presales-agent",
+      "description": "Turns a Salesforce client discovery conversation into a scope matrix, quality review, sprint plan, and timeline — acting as a Certified Technical Architect and Senior Presales Business Analyst. Outputs JSON plus formatted Excel workbooks.",
+      "author": {
+        "name": "namit-jpg"
+      },
+      "category": "productivity",
+      "source": "./plugins/presales-agent"
+    }
+  ]
+}

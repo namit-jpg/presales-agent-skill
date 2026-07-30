@@ -1,0 +1,15 @@
+{
+  "name": "presales-agent",
+  "description": "Salesforce presales documentation workflow — turns a client discovery conversation into a scope matrix, quality review, sprint plan, and timeline, with Excel output.",
+  "version": "1.0.0",
+  "author": {
+    "name": "namit-jpg"
+  },
+  "keywords": [
+    "salesforce",
+    "presales",
+    "scoping",
+    "estimation",
+    "sprint-planning"
+  ]
+}

@@ -1,0 +1,20 @@
+# Node dependencies — installed on first use via `npm install --prefix scripts`
+node_modules/
+
+# Engagement artefacts — never commit client data
+opportunities/
+outputs/
+*.xlsx
+!**/templates/*.xlsx
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+.idea/
+.vscode/
+
+# Logs
+npm-debug.log*
+*.log
