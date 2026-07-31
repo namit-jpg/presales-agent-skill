@@ -114,7 +114,8 @@ engagement context (matching `schemas/engagement_context.ts`) to:
 **Read first:**
 `references/scope_building.md`, `references/assumption_writing.md`,
 `references/effort_estimation.md`, `references/assumption_patterns.md`,
-`references/products_catalog.md`, `references/scope_patterns.md`
+`references/products_catalog.md`, `references/scope_patterns.md`,
+`references/solution_approach_patterns.md`
 
 Generate a complete scope matrix — one row per Sub-Module — using the engagement
 context from Step 1. Tell the user: "Generating scope matrix for [client]... this
@@ -131,27 +132,14 @@ may take a moment." Write the JSON array (matching `schemas/scope_row.ts`) to
   "functionalAssumptions": ["Assuming a maximum of 5 WhatsApp message templates are configured.", "..."],
   "technicalAssumptions": ["Assuming Digital Engagement license is procured with sufficient conversation credits.", "..."],
   "solutionApproach": "Configure Digital Engagement WhatsApp channel, Omni-Channel routing rules, and case auto-creation flow.",
-  "artifactCounts": {
-    "objects": {"simple": 0, "medium": 0, "complex": 0},
-    "objectAutomations": {"simple": 1, "medium": 0, "complex": 0},
-    "recordTypes": {"simple": 0, "medium": 0, "complex": 0},
-    "pageLayouts": {"simple": 0, "medium": 0, "complex": 0},
-    "flows": {"simple": 0, "medium": 1, "complex": 0},
-    "apexTriggers": {"simple": 0, "medium": 0, "complex": 0},
-    "apexClasses": {"simple": 0, "medium": 0, "complex": 0},
-    "lwcComponents": {"simple": 0, "medium": 0, "complex": 0},
-    "customUiUx": {"simple": 0, "medium": 0, "complex": 0},
-    "partnerAppPages": {"simple": 0, "medium": 0, "complex": 0},
-    "apis": {"simple": 0, "medium": 0, "complex": 0},
-    "batchJobs": {"simple": 0, "medium": 0, "complex": 0},
-    "reports": {"simple": 0, "medium": 0, "complex": 0},
-    "dashboards": {"simple": 0, "medium": 0, "complex": 0},
-    "orgSetup": {"simple": 0, "medium": 1, "complex": 0},
-    "dataMigration": {"simple": 0, "medium": 0, "complex": 0}
-  },
-  "effortHours": 0, "reviewComments": "", "phase": "Phase 1"
+  "effortHours": 6, "reviewComments": "", "phase": "Phase 1"
 }
 ```
+
+`effortHours` is a single direct estimate per row — not a per-artifact
+breakdown. See `references/effort_estimation.md` for what it represents
+(AI-assisted delivery: review, validation, and UAT sign-off time) and typical
+ranges (2–16h for most rows).
 
 **After writing the JSON**, run the xlsx generator (path is inside this skill, but
 it writes into the *current project's* `opportunities/` folder):
@@ -294,19 +282,22 @@ Service Cloud EE, Field Service Plus, Digital Engagement. 50 agents, 120 technic
 & Optimization, FSL Mobile App, Entitlements & SLA, Knowledge Base, Reports &
 Dashboards. SAP ERP (bidirectional), Avaya CTI (inbound). Migration from SAP CRM —
 Accounts (50k), Contacts (75k), Cases (5k), Work Orders (8k). Phase 1/2, Go-Live
-Phase 1: Q4 2026. Expected: 30–40 rows, 750–1000h, 3–4 sprints.
+Phase 1: Q4 2026. Expected: 30–40 rows; effort and sprint count follow the
+per-row model in `references/effort_estimation.md` (indicative: ~300–550h, 2–3
+sprints) — these are directional, not a validated benchmark.
 
 **"Run Test 2" / "DistribuCo KSA"** — Energy Distribution, KSA. Sales Cloud,
 Revenue Cloud/CPQ, Service Cloud EE, Experience Cloud. 40 sales reps, 8 managers,
 20 service agents, 500 portal users. Lead-to-Quote, DOA Approval Workflow, Customer
 Portal Self-Service, Case Management, Sales Reporting. Oracle ERP (bidirectional).
 Migration from Oracle CRM — Accounts (5k), Contacts (8k), Opportunities. Phase 1/2,
-Go-Live Phase 1: Q4 2026. Expected: 18–25 rows, 450–600h, 2–3 sprints.
+Go-Live Phase 1: Q4 2026. Expected: 18–25 rows (indicative: ~150–250h, 1–2
+sprints).
 
 **"Run Test 3" / "MegaCorp India"** — Manufacturing, India. Service Cloud EE, Field
 Service Plus, Experience Cloud, Salesforce Platform, Digital Engagement,
 Einstein/Agentforce. Full service + field + portal + AI + 6 integrations. Expected:
-80–100 rows, 2,500–3,500h, 8–10 sprints.
+80–100 rows (indicative: ~800–1,400h, 2–4 sprints depending on team size).
 
 ## Non-negotiable quality rules
 
@@ -338,13 +329,14 @@ Einstein/Agentforce. Full service + field + portal + AI + 6 integrations. Expect
 
 ## Effort reference (quick guide)
 
-| Artifact | Simple | Medium | Complex |
-|----------|--------|--------|---------|
-| Flows | 4h | 5h | 6h |
-| Apex Classes (×3) | 44h | 55h | 66h |
-| LWC Components | 25h | 31h | 37.5h |
-| APIs (inbound/outbound) | 30h | 37.5h | 45h |
-| Data Migration (per wave) | 64h | 80h | 100h |
-| Object Automations | 33h | 41h | 49.5h |
+One direct `effortHours` estimate per row — human review/validation/UAT time
+on an AI-agent-assisted build, not full manual-build hours.
 
-Full table: `references/effort_reference.md`
+| Row complexity | effortHours |
+|---|---|
+| Simple | 2–5h |
+| Medium | 5–10h |
+| Complex | 10–16h |
+| Exceptionally large (rare, flag explicitly) | up to 300h |
+
+Full guidance: `references/effort_estimation.md` and `references/effort_reference.md`

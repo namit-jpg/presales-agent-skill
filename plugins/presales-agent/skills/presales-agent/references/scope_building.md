@@ -27,9 +27,9 @@ Every scope row MUST contain ALL of the following columns:
 | K | Functional Assumptions | Rich Text | Yes |
 | L | Technical Assumptions | Rich Text | Yes |
 | M | Solution / Imp Approach | Text | Yes |
-| N–AC | Artifact Counts (16 buckets) | Number | Yes |
-| AD | Efforts (Design, Build, UT) | Calculated | Auto |
-| AE | Review Comments | Text | No |
+| N | Effort Hours | Number | Yes |
+| O | Review Comments | Text | No |
+| P | Phase | Enum | Yes |
 
 ## Module/Sub-Module Decomposition Rules
 
@@ -49,27 +49,10 @@ Every scope row MUST contain ALL of the following columns:
 - Custom+Integration: Custom code with external systems
 - OOTB+Config: Pure declarative, no Apex
 
-## The 16 Artifact Buckets (N through AC columns)
+## Effort Hours (Column N)
 
-Reference knowledge/EFFORT_REFERENCE.md for per-item effort values.
-Count items with Simple / Medium / Complex granularity:
-
-1. Objects (Custom/Extended)
-2. Object Automations (Validation Rules, Assignment Rules, etc.)
-3. Record Types
-4. Page Layouts
-5. Flows (Screen, Record-Triggered, Scheduled)
-6. Apex Triggers
-7. Apex Classes (batch, service, controller, invocable)
-8. LWC Components
-9. Custom UI/UX
-10. Partner App Pages (Experience Cloud)
-11. Inbound/Outbound APIs
-12. Batch Jobs
-13. Reports
-14. Dashboards
-15. Org Setup (permission sets, queues, channels, etc.)
-16. Data Migration (migration waves)
+One direct estimate per row — see `references/effort_estimation.md` for what
+the number represents and typical ranges. Do not itemize by artifact type.
 
 ## Salesforce SKU Name Rules
 

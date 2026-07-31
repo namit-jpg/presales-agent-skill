@@ -30,11 +30,13 @@ The Scope Agent uses this to generate structurally correct, comprehensive scope 
 
 | Module | Common Sub-Modules |
 |--------|-------------------|
-| Lead Management | Lead Capture, Lead Qualification, Lead Routing, Lead Conversion |
-| Opportunity Management | Sales Pipeline, Opportunity Stages, Forecasting, Stakeholder Collaboration |
-| Account Management | Customer 360, B2B Customer Profile, Hierarchy |
+| Lead Management | Lead Capture, Lead Qualification, Lead Qualification Scoring, Lead Routing, Lead Conversion, Duplicate Prevention |
+| Opportunity Management | Sales Pipeline, Opportunity Stages, Forecasting, Stakeholder Collaboration, Guided Stage Exit Criteria, Sub-Stage Automation, Tiered Discount Approval |
+| Account Management | Customer 360, B2B Customer Profile, Hierarchy, Retail Account Segmentation, Parent-Child Store Hierarchy, Credit Hold Visibility |
 | Activity Management | Task & Event Tracking, Email Integration, Meeting Logging |
 | Reporting & Analytics | Pipeline Reports, Win/Loss Analysis, Sales Dashboards, Forecast Reports |
+
+Solution-approach patterns for the sub-modules above: `references/solution_approach_patterns.md`.
 
 ## Revenue Cloud / CPQ
 

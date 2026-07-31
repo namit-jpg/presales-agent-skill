@@ -1,64 +1,50 @@
 ---
 skill: effort_estimation
-version: 1.0
+version: 2.0
 description: >
-  Translates artifact counts into hour estimates using calibrated per-item effort
-  reference table. Includes Design, Build, and Unit Test in estimates.
+  Estimates a single effortHours value per scope-matrix row: the human time
+  needed to review, validate, and sign off an AI-agent-assisted build — not
+  traditional unassisted manual-build hours.
 ---
 
 # Effort Estimation Skill
 
-## Per-Item Effort Reference Table (Hours: Design + Build + UT)
+## What effortHours represents
 
-| Artifact Type | Simple | Medium | Complex |
-|--------------------------|--------|--------|---------|
-| Objects | 4.5 | 5.625 | 6.75 |
-| Object Automations | 33 | 41.25 | 49.5 |
-| Record Types | 2.5 | 3.125 | 3.75 |
-| Page Layouts | 2.5 | 3.125 | 3.75 |
-| Flows | 4 | 5 | 6 |
-| Apex Triggers | 22 | 27.5 | 33 |
-| Apex Classes (×3) | 44 | 55 | 66 |
-| LWC | 25 | 31.25 | 37.5 |
-| Custom UI/UX | 25 | 31.25 | 37.5 |
-| Partner App Pages | 15 | 18.75 | 22.5 |
-| Inbound/Outbound APIs | 30 | 37.5 | 45 |
-| Batch Jobs | 34 | 42.5 | 51 |
-| Reports | 2.5 | 3.125 | 3.75 |
-| Dashboards | 5 | 6.25 | 7.5 |
-| Org Setup | 24 | 40 | 48 |
-| Data Migration | 64 | 80 | 100 |
+Each scope-matrix row carries ONE effort number, not a breakdown by artifact
+type. It estimates the human time to:
 
-## Complexity Classification Guide
+1. Review and validate the configuration/code the delivery agents produce,
+2. Run functional and edge-case testing,
+3. Walk the client through UAT and get sign-off.
 
-### Simple
-- Standard OOTB fields/picklists/layouts
-- 1–3 criteria flows
-- Single-object automations
-- Standard reports with filters
+It is deliberately **not** full manual-build effort (design + build + unit
+test with no AI assistance) — that would run several times higher for the
+same scope. If a client engagement is being delivered without AI-agent
+assistance, say so explicitly in the row's technical assumptions rather than
+inflating this number to compensate.
 
-### Medium
-- Cross-object flows, 4–8 criteria
-- Lookup-driven logic
-- Multi-layout configurations
-- Custom formula fields
-- Screen flows
+## Typical ranges
 
-### Complex
-- Multi-object orchestration
-- Apex, async processing
-- Conditional rendering LWC
-- Multi-API integrations
-- Complex batch logic
-- DML chains
+| Row complexity | effortHours |
+|---|---|
+| Simple — declarative config, single object, no integration | 2–5h |
+| Medium — cross-object automation, formula/rollup logic, standard integration pattern | 5–10h |
+| Complex — multi-object orchestration, custom Apex, non-trivial integration, one data-migration wave | 10–16h |
+| Exceptionally large (rare) — major integration hub, migration with heavy cleansing | up to 300h — flag these explicitly in Review Comments; they should be uncommon |
 
-## Row Total Calculation
+Keep values moderate. If most rows in a matrix sit above 20h, the sub-module
+is probably too coarse — split it into smaller rows per the decomposition
+rules in `references/scope_building.md`, rather than inflating one number.
 
-Row Effort = SUM of (Count × Per-Item Effort) for each artifact bucket
-           + Any explicitly scoped Misc Manual Effort
+## Estimating a row
+
+Given the solution approach already written for the row, ask how much human
+time is needed to review the AI-agent output, test it, and get it signed off.
+Do not itemize by artifact type — set one direct number.
 
 ## Grand Total & Sprint Inputs
 
-Sum all row efforts by Module for Sprint Plan input.
-Data Load effort is separated from development effort in sprint calculations.
-Shared Activities (e.g., Org Setup) can be allocated once regardless of sprint.
+Sum all row efforts by Module for the Sprint Plan input. Data Load effort is
+estimated and tracked separately from configuration/build effort (see
+`references/sprint_planning.md`) — never folded into a row's effortHours.

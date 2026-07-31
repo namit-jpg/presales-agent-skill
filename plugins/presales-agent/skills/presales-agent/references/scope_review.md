@@ -14,7 +14,7 @@ Evaluate EVERY scope row across the following 8 dimensions:
 
 ### 1. Completeness Check
 - Does the row have BOTH functional AND technical assumptions?
-- Are all 16 artifact buckets either populated or explicitly set to 0?
+- Does the row have an effortHours value (0 only for informational rows)?
 - Is the SKU name correctly specified?
 - Does the description follow the standard pattern?
 
@@ -48,9 +48,9 @@ Evaluate EVERY scope row across the following 8 dimensions:
 - Are data migration dependencies called out in technical assumptions?
 
 ### 7. Effort Sanity Check
-- Is the effort proportionate to the artifact counts?
+- Is effortHours proportionate to the row's stated complexity (see references/effort_estimation.md ranges)?
 - Are there 0-effort rows that clearly require work?
-- Are there suspiciously high estimates for simple config items?
+- Are there rows above ~16h that should be split into smaller sub-modules instead?
 
 ### 8. Sprint Planning Readiness
 - Can each row be built in a sprint without cross-row dependency issues?

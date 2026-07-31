@@ -31,39 +31,6 @@ function fileName(base) {
   return CLIENT_SLUG ? `${CLIENT_SLUG}_${base}` : base;
 }
 
-// ─── Effort rates (mirrors schemas/scope_row.ts) ─────────────────────────────
-const EFFORT_RATES = {
-  objects:          { simple: 4.5,  medium: 5.625, complex: 6.75  },
-  objectAutomations:{ simple: 33,   medium: 41.25, complex: 49.5  },
-  recordTypes:      { simple: 2.5,  medium: 3.125, complex: 3.75  },
-  pageLayouts:      { simple: 2.5,  medium: 3.125, complex: 3.75  },
-  flows:            { simple: 4,    medium: 5,     complex: 6     },
-  apexTriggers:     { simple: 22,   medium: 27.5,  complex: 33    },
-  apexClasses:      { simple: 44,   medium: 55,    complex: 66    },
-  lwcComponents:    { simple: 25,   medium: 31.25, complex: 37.5  },
-  customUiUx:       { simple: 25,   medium: 31.25, complex: 37.5  },
-  partnerAppPages:  { simple: 15,   medium: 18.75, complex: 22.5  },
-  apis:             { simple: 30,   medium: 37.5,  complex: 45    },
-  batchJobs:        { simple: 34,   medium: 42.5,  complex: 51    },
-  reports:          { simple: 2.5,  medium: 3.125, complex: 3.75  },
-  dashboards:       { simple: 5,    medium: 6.25,  complex: 7.5   },
-  orgSetup:         { simple: 24,   medium: 40,    complex: 48    },
-  dataMigration:    { simple: 64,   medium: 80,    complex: 100   },
-};
-
-function calcEffort(counts) {
-  let total = 0;
-  for (const key of Object.keys(EFFORT_RATES)) {
-    if (!counts[key]) continue;
-    const r = EFFORT_RATES[key];
-    const c = counts[key];
-    total += (c.simple || 0) * r.simple;
-    total += (c.medium || 0) * r.medium;
-    total += (c.complex || 0) * r.complex;
-  }
-  return Math.round(total * 100) / 100;
-}
-
 // ─── Scope Matrix ─────────────────────────────────────────────────────────────
 function generateScopeXlsx() {
   const jsonPath = path.join(OUTPUTS, fileName('scope_matrix.json'));
@@ -74,46 +41,18 @@ function generateScopeXlsx() {
 
   const rows = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
 
-  // Recalculate effort from artifact counts to ensure accuracy
-  for (const row of rows) {
-    if (row.artifactCounts) {
-      row.effortHours = calcEffort(row.artifactCounts);
-    }
-  }
-
-  const ARTIFACT_KEYS = [
-    'objects','objectAutomations','recordTypes','pageLayouts','flows',
-    'apexTriggers','apexClasses','lwcComponents','customUiUx','partnerAppPages',
-    'apis','batchJobs','reports','dashboards','orgSetup','dataMigration',
-  ];
-  const ARTIFACT_LABELS = [
-    'Objects','Object Automations','Record Types','Page Layouts','Flows',
-    'Apex Triggers','Apex Classes','LWC Components','Custom UI/UX','Partner App Pages',
-    'Inbound/Outbound APIs','Batch Jobs','Reports','Dashboards','Org Setup','Data Migration',
-  ];
-
-  // Build header row
-  const bucketHeaders = [];
-  for (const label of ARTIFACT_LABELS) {
-    bucketHeaders.push(`${label} (S)`, `${label} (M)`, `${label} (C)`);
-  }
+  // effortHours is a direct per-row estimate (see references/effort_estimation.md) —
+  // no per-artifact breakdown to recalculate from.
   const headers = [
     'Audit Comments','Customer Doc Ref','BRN','SUB BRN','Salesforce SKU Name',
     'Is part of requirement doc?','Custom/Config/Integration','Module/Functional Area',
     'Sub-Module','Description','Functional Assumptions','Technical Assumptions',
     'Solution / Imp Approach',
-    ...bucketHeaders,
-    'Effort Hours (Design+Build+UT)','Review Comments','Phase',
+    'Effort Hours','Review Comments','Phase',
   ];
 
   const data = [headers];
   for (const row of rows) {
-    const c = row.artifactCounts || {};
-    const bucketValues = [];
-    for (const key of ARTIFACT_KEYS) {
-      const b = c[key] || {};
-      bucketValues.push(b.simple || 0, b.medium || 0, b.complex || 0);
-    }
     data.push([
       row.auditComments || '',
       row.customerDocRef || '',
@@ -128,7 +67,6 @@ function generateScopeXlsx() {
       Array.isArray(row.functionalAssumptions) ? row.functionalAssumptions.map((a,i) => `${i+1}. ${a}`).join('\n') : (row.functionalAssumptions || ''),
       Array.isArray(row.technicalAssumptions)  ? row.technicalAssumptions.map((a,i)  => `${i+1}. ${a}`).join('\n') : (row.technicalAssumptions || ''),
       row.solutionApproach || '',
-      ...bucketValues,
       row.effortHours || 0,
       row.reviewComments || '',
       row.phase || 'Phase 1',
@@ -165,7 +103,6 @@ function generateScopeXlsx() {
   ws1['!cols'] = [
     {wch:15},{wch:15},{wch:8},{wch:7},{wch:22},{wch:12},{wch:22},
     {wch:28},{wch:35},{wch:70},{wch:80},{wch:80},{wch:55},
-    ...bucketHeaders.map(() => ({wch:6})),
     {wch:14},{wch:20},{wch:10},
   ];
   // Enable text wrap for assumption columns
