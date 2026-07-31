@@ -37,11 +37,30 @@ Keep values moderate. If most rows in a matrix sit above 20h, the sub-module
 is probably too coarse — split it into smaller rows per the decomposition
 rules in `references/scope_building.md`, rather than inflating one number.
 
+## Relationship to artifact counts
+
+The BRD carries artifact counts (16 buckets × Simple/Medium/Complex, template
+columns K–BF). They are **descriptive** — they tell the client how many objects,
+flows, Apex classes, and integrations the build involves.
+
+They are **not** an input to a pricing formula. Do not multiply them by per-item
+rates. The `brd_template.xlsx` file originally shipped with a per-item rate row
+above those columns; the generator clears it, because those rates describe a
+full manual-build model this skill no longer uses.
+
+Counts and effort should still be *coherent*: a row claiming three complex Apex
+classes and 2h of effort is contradictory, and the Step 3 review flags it. Use
+the counts as a sanity check on your estimate, not as its source.
+
 ## Estimating a row
 
 Given the solution approach already written for the row, ask how much human
 time is needed to review the AI-agent output, test it, and get it signed off.
-Do not itemize by artifact type — set one direct number.
+Set one direct number.
+
+Scoped manual work with no artifact of its own — workshops, documentation,
+client-side coordination — goes in `miscManualEfforts` (column BG), not folded
+into `effortHours`.
 
 ## Grand Total & Sprint Inputs
 

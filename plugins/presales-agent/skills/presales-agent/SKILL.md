@@ -3,11 +3,12 @@ name: presales-agent
 description: >
   Runs a Salesforce presales documentation workflow — acting as a Certified Technical
   Architect (CTA) and Senior Presales Business Analyst to turn a client discovery
-  conversation into a scope matrix, sprint plan, timeline, and quality review.
+  conversation into a BRD (scope matrix), sprint plan, timeline, and quality review.
   Use when the user asks to start/run a presales engagement, scope a Salesforce
-  project, build a scope matrix / sprint plan / timeline / effort estimate for a
+  project, build a BRD / scope matrix / sprint plan / timeline / effort estimate for a
   client, or says things like "start a new engagement for [client]", "run presales
-  for [client]", "build a scope for [client]", or "resume [client] from scope/review/sprint".
+  for [client]", "build a BRD for [client]", "build a scope for [client]", or
+  "resume [client] from scope/review/sprint".
 ---
 
 # Presales Agent
@@ -22,9 +23,16 @@ directory bundles everything needed:
 
 ```
 references/   - step-by-step sub-skills + reusable knowledge (read before each step)
-schemas/       - Zod schemas the JSON outputs must match
-scripts/       - generate_xlsx.js — converts JSON outputs to Excel
+schemas/      - Zod schemas the JSON outputs must match
+templates/    - brd_template.xlsx — the MANDATORY BRD output format
+scripts/      - generate_xlsx.js — converts JSON outputs to Excel
 ```
+
+**The BRD template is not optional.** `templates/brd_template.xlsx` defines the
+BRD's column layout, and `generate_xlsx.js` produces the BRD by populating that
+file. Never hand-build a BRD workbook, never reorder or invent columns, and
+never write the BRD by any route other than the generator. If the template is
+missing, the generator stops rather than improvising a layout.
 
 ## Locating this skill (SKILL_DIR)
 
@@ -54,8 +62,8 @@ All artefacts for an engagement are written into the **current project directory
 ```
 opportunities/<ClientName>/
   <slug>_engagement_context.json
-  <slug>_scope_matrix.json
-  <slug>_scope_matrix.xlsx
+  <slug>_brd.json
+  <slug>_brd.xlsx
   <slug>_review_report.md
   <slug>_sprint_plan.json
   <slug>_timeline.json
@@ -109,7 +117,7 @@ engagement context (matching `schemas/engagement_context.ts`) to:
 
 **Quality gate:** all 7 dimensions populated before proceeding.
 
-### STEP 2 — Scope Building
+### STEP 2 — BRD Building
 
 **Read first:**
 `references/scope_building.md`, `references/assumption_writing.md`,
@@ -117,38 +125,72 @@ engagement context (matching `schemas/engagement_context.ts`) to:
 `references/products_catalog.md`, `references/scope_patterns.md`,
 `references/solution_approach_patterns.md`
 
-Generate a complete scope matrix — one row per Sub-Module — using the engagement
-context from Step 1. Tell the user: "Generating scope matrix for [client]... this
-may take a moment." Write the JSON array (matching `schemas/scope_row.ts`) to
-`opportunities/<ClientName>/<slug>_scope_matrix.json`, using this row shape:
+Generate a complete BRD — one row per Sub-Module — using the engagement
+context from Step 1. Tell the user: "Generating BRD for [client]... this
+may take a moment." Write the JSON array (matching `schemas/brd_row.ts`) to
+`opportunities/<ClientName>/<slug>_brd.json`, using this row shape:
 
 ```json
 {
-  "auditComments": "", "customerDocRef": "REQ-001", "brn": "1", "subBrn": 1.1,
-  "salesforceSkuName": "Service Cloud EE", "isPartOfRequirementDoc": "Yes",
-  "classification": "Config+Custom", "module": "Case Management",
-  "subModule": "Case Creation via WhatsApp",
+  "auditComments": "", "brn": "1", "subBrn": 1.1,
+  "module": "Case Management", "subModule": "Case Creation via WhatsApp",
+  "phase": "Phase 1",
   "description": "[Client] requires the platform to enable case creation via WhatsApp so that customers can report issues on their preferred channel.",
   "functionalAssumptions": ["Assuming a maximum of 5 WhatsApp message templates are configured.", "..."],
   "technicalAssumptions": ["Assuming Digital Engagement license is procured with sufficient conversation credits.", "..."],
   "solutionApproach": "Configure Digital Engagement WhatsApp channel, Omni-Channel routing rules, and case auto-creation flow.",
-  "effortHours": 6, "reviewComments": "", "phase": "Phase 1"
+  "impApproach": "Build in Sprint 1 after org setup; depends on the client's WABA number being approved before configuration starts.",
+  "artifactCounts": {
+    "objects": {"simple": 0, "medium": 0, "complex": 0},
+    "objectAutomations": {"simple": 1, "medium": 0, "complex": 0},
+    "recordTypes": {"simple": 0, "medium": 0, "complex": 0},
+    "pageLayouts": {"simple": 0, "medium": 0, "complex": 0},
+    "flows": {"simple": 0, "medium": 1, "complex": 0},
+    "triggers": {"simple": 0, "medium": 0, "complex": 0},
+    "apexClasses": {"simple": 0, "medium": 0, "complex": 0},
+    "lwc": {"simple": 0, "medium": 0, "complex": 0},
+    "customUiUx": {"simple": 0, "medium": 0, "complex": 0},
+    "partnerApp": {"simple": 0, "medium": 0, "complex": 0},
+    "apis": {"simple": 0, "medium": 0, "complex": 0},
+    "batchExecution": {"simple": 0, "medium": 0, "complex": 0},
+    "reports": {"simple": 0, "medium": 0, "complex": 0},
+    "dashboard": {"simple": 0, "medium": 0, "complex": 0},
+    "orgSetup": {"simple": 0, "medium": 1, "complex": 0},
+    "dataMigration": {"simple": 0, "medium": 0, "complex": 0}
+  },
+  "miscManualEfforts": 0,
+  "effortHours": 6, "reviewComments": "",
+  "customerDocRef": "REQ-001", "salesforceSkuName": "Service Cloud EE",
+  "isPartOfRequirementDoc": "Yes", "classification": "Config+Custom"
 }
 ```
 
-`effortHours` is a single direct estimate per row — not a per-artifact
-breakdown. See `references/effort_estimation.md` for what it represents
-(AI-assisted delivery: review, validation, and UAT sign-off time) and typical
-ranges (2–16h for most rows).
+Two fields carry different jobs — keep them distinct:
+- **solutionApproach** (template column I) — WHAT gets built, in Salesforce
+  terms. 1–3 sentences. See `references/solution_approach_patterns.md`.
+- **impApproach** (column J) — HOW it gets delivered: sequencing, prerequisites,
+  dependencies on other rows or on client actions.
 
-**After writing the JSON**, run the xlsx generator (path is inside this skill, but
-it writes into the *current project's* `opportunities/` folder):
+**artifactCounts are descriptive, not a pricing formula.** They record how many
+of each thing gets built so the client can see the shape of the work. They are
+NOT multiplied by per-item rates. `effortHours` is set directly — see
+`references/effort_estimation.md` (AI-assisted delivery: review, validation,
+UAT sign-off; typically 2–16h). Put scoped manual work with no artifact of its
+own — workshops, documentation, client coordination — in `miscManualEfforts`.
+
+The last four fields have no column in the BRD template. They stay in the JSON
+for the Step 3 review and are not written to the workbook.
+
+**After writing the JSON**, run the generator. It populates
+`templates/brd_template.xlsx` — this is the only supported way to produce the
+BRD:
 
 ```bash
-node "<SKILL_DIR>/scripts/generate_xlsx.js" scope "opportunities/<ClientName>" <slug>
+node "<SKILL_DIR>/scripts/generate_xlsx.js" brd "opportunities/<ClientName>" <slug>
 ```
 
-This produces `opportunities/<ClientName>/<slug>_scope_matrix.xlsx` (3 sheets).
+This produces `opportunities/<ClientName>/<slug>_brd.xlsx` (3 sheets: BRD,
+Summary, Open Clarifications).
 
 **Quality gate:** every row has BOTH functional AND technical assumptions
 (minimum 3 each for complex items).
@@ -157,13 +199,13 @@ This produces `opportunities/<ClientName>/<slug>_scope_matrix.xlsx` (3 sheets).
 
 **Read first:** `references/scope_review.md`, `references/review_checklist.md`
 
-Review every scope row across all 8 dimensions (completeness, assumption quality,
+Review every BRD row across all 8 dimensions (completeness, assumption quality,
 technical architecture, commercial scope protection, license alignment, dependency
 mapping, effort sanity, sprint readiness). Write the review to
 `opportunities/<ClientName>/<slug>_review_report.md`:
 
 ```markdown
-# Scope Review Report
+# BRD Review Report
 
 ## Executive Summary
 [1 paragraph: score, row count, verdict, key issues]
@@ -256,7 +298,7 @@ Tell the user:
 ```
 ✅ PRESALES ARTEFACTS READY — <ClientName>
 
-📁 opportunities/<ClientName>/<slug>_scope_matrix.xlsx    — [N] rows, [X]h total
+📁 opportunities/<ClientName>/<slug>_brd.xlsx             — [N] rows, [X]h total
 📁 opportunities/<ClientName>/<slug>_sprint_plan.xlsx     — [N] sprints, [X] weeks
 📁 opportunities/<ClientName>/<slug>_timeline.xlsx        — Project timeline
 📁 opportunities/<ClientName>/<slug>_review_report.md     — Quality score: [X]/100
@@ -269,10 +311,15 @@ Open the xlsx files in Excel for final presentation.
 The user must specify the client name (or infer it from the `opportunities/`
 folder in the current project). Re-derive the slug before loading files.
 
-- "resume from scope" → load `<slug>_engagement_context.json`, skip Step 1
-- "resume from review" → load `<slug>_scope_matrix.json`, skip Steps 1–2
-- "resume from sprint" → load `<slug>_scope_matrix.json`, skip Steps 1–3
+- "resume from scope" / "resume from brd" → load `<slug>_engagement_context.json`, skip Step 1
+- "resume from review" → load `<slug>_brd.json`, skip Steps 1–2
+- "resume from sprint" → load `<slug>_brd.json`, skip Steps 1–3
 - "regenerate xlsx" → run `node "<SKILL_DIR>/scripts/generate_xlsx.js" all "opportunities/<ClientName>" <slug>`
+- "regenerate brd" → run the same script with `brd` instead of `all`
+
+Regenerating always re-populates the template from `<slug>_brd.json`. To change
+the BRD's columns, edit `templates/brd_template.xlsx` — never patch the output
+workbook by hand, or the next regeneration silently discards the edit.
 
 ## Test scenarios (no discovery needed)
 
@@ -309,6 +356,9 @@ Einstein/Agentforce. Full service + field + portal + AI + 6 integrations. Expect
 6. ALWAYS separate Data Load effort from Development effort in sprint calculations.
 7. ALWAYS include client responsibilities in functional assumptions.
 8. NEVER proceed past CRITICAL review flags without user acknowledgment.
+9. ALWAYS produce the BRD by running the generator against
+   `templates/brd_template.xlsx`. Never hand-build the workbook, never reorder
+   or add columns, and never edit the generated xlsx directly.
 
 ## Assumption writing rules
 

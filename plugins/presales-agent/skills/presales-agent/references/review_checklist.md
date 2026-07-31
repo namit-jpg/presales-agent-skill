@@ -12,9 +12,9 @@ This checklist is executed by the Review Agent against every scope document.
 | 1.4 | SUB BRN follows decimal format (1.1, 1.2...) | LOW |
 | 1.5 | Salesforce SKU Name matches a product in PRODUCTS_CATALOG.md | HIGH |
 | 1.6 | Custom/Config/Integration classification is applied to every row | HIGH |
-| 1.7 | Every row has an effortHours value (0 is acceptable only for informational rows, blank is not) | HIGH |
-| 1.8 | effortHours is non-zero for every row that requires configuration or build work | HIGH |
-| 1.9 | Solution/Imp Approach field is populated | MEDIUM |
+| 1.7 | All 16 artifact buckets have values (0 is acceptable, blank is not) | HIGH |
+| 1.8 | Every row has an effortHours value, non-zero wherever build work is required | HIGH |
+| 1.9 | Solution Approach AND Imp Approach are both populated, and are not duplicates of each other | MEDIUM |
 | 1.10 | Description follows the standard pattern (client needs/requires...) | MEDIUM |
 
 ## Category 2: Assumption Quality (10 checks)
@@ -52,7 +52,7 @@ This checklist is executed by the Review Agent against every scope document.
 | # | Check | Severity if Fail |
 |---|-------|-----------------|
 | 4.1 | No open-ended phrases ('and more', 'as needed', 'similar features') | CRITICAL |
-| 4.2 | Every Integration-classified row has a non-placeholder effortHours proportionate to its stated complexity | CRITICAL |
+| 4.2 | Every integration has a corresponding inbound OR outbound API artifact count | CRITICAL |
 | 4.3 | Portal rows confirm Experience Cloud license type (per-member vs per-login) | HIGH |
 | 4.4 | AI rows confirm no custom model training is in scope | HIGH |
 | 4.5 | License procurement is stated as client responsibility where non-standard SKUs used | HIGH |

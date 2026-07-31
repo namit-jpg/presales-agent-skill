@@ -14,7 +14,9 @@ Evaluate EVERY scope row across the following 8 dimensions:
 
 ### 1. Completeness Check
 - Does the row have BOTH functional AND technical assumptions?
+- Are all 16 artifact buckets either populated or explicitly set to 0?
 - Does the row have an effortHours value (0 only for informational rows)?
+- Are Solution Approach and Imp Approach both present and distinct?
 - Is the SKU name correctly specified?
 - Does the description follow the standard pattern?
 
@@ -49,6 +51,8 @@ Evaluate EVERY scope row across the following 8 dimensions:
 
 ### 7. Effort Sanity Check
 - Is effortHours proportionate to the row's stated complexity (see references/effort_estimation.md ranges)?
+- Is effortHours consistent with the artifact counts — a row claiming several
+  complex Apex classes but 2h of effort is a contradiction worth flagging.
 - Are there 0-effort rows that clearly require work?
 - Are there rows above ~16h that should be split into smaller sub-modules instead?
 
