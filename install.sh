@@ -13,6 +13,8 @@ BRANCH="${BRANCH:-main}"
 NAME="presales-agent"
 BASE="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 TARGET="$BASE/skills/$NAME"
+# Backups live outside skills/ — Claude Code loads every folder in there as a skill.
+BACKUPS="$BASE/skill-backups"
 INNER="presales-agent-skill-$BRANCH/plugins/wd-presales-skill2/skills/$NAME"
 
 say()  { printf '  %s\n' "$1"; }
@@ -41,8 +43,9 @@ fi
 [ -f "$TMP/$INNER/SKILL.md" ] || fail "Archive layout unexpected — SKILL.md not found at $INNER."
 
 if [ -d "$TARGET" ]; then
-  BACKUP="$TARGET.backup-$(date +%Y%m%d%H%M%S)"
-  say "Existing install found — moving it to $(basename "$BACKUP")"
+  mkdir -p "$BACKUPS"
+  BACKUP="$BACKUPS/$NAME.backup-$(date +%Y%m%d%H%M%S)"
+  say "Existing install found — moving it to $BACKUP"
   mv "$TARGET" "$BACKUP"
 fi
 

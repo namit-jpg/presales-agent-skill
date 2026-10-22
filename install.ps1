@@ -12,6 +12,8 @@ $branch = if ($env:BRANCH) { $env:BRANCH } else { 'main' }
 $name   = 'presales-agent'
 $base   = if ($env:CLAUDE_CONFIG_DIR) { $env:CLAUDE_CONFIG_DIR } else { Join-Path $HOME '.claude' }
 $target = Join-Path $base "skills\$name"
+# Backups live outside skills\ — Claude Code loads every folder in there as a skill.
+$backups = Join-Path $base 'skill-backups'
 $inner  = "presales-agent-skill-$branch\plugins\wd-presales-skill2\skills\$name"
 
 function Say  { param($m) Write-Host "  $m" }
@@ -42,8 +44,9 @@ try {
     }
 
     if (Test-Path $target) {
-        $backup = "$target.backup-" + (Get-Date -Format 'yyyyMMddHHmmss')
-        Say "Existing install found - moving it to $(Split-Path $backup -Leaf)"
+        New-Item -ItemType Directory -Path $backups -Force | Out-Null
+        $backup = Join-Path $backups ("$name.backup-" + (Get-Date -Format 'yyyyMMddHHmmss'))
+        Say "Existing install found - moving it to $backup"
         Move-Item -Path $target -Destination $backup
     }
 

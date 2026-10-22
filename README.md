@@ -40,8 +40,8 @@ curl -fsSL https://raw.githubusercontent.com/namit-jpg/presales-agent-skill/main
 
 Then restart Claude Code. That's it — the installer downloads the skill to
 `~/.claude/skills/presales-agent` and installs the one dependency the Excel export
-needs. Any previous install is moved aside to a timestamped backup rather than
-overwritten.
+needs. Any previous install is moved to a timestamped backup in
+`~/.claude/skill-backups/` rather than overwritten.
 
 Prefer to read a script before running it? Download
 [install.ps1](install.ps1) / [install.sh](install.sh), open it, then run it locally.
@@ -95,7 +95,7 @@ claude plugin update wd-presales-skill2@presales-skills
 ```
 
 **One-line installer or manual copy** — run the same install line again. The
-previous copy is moved to a timestamped backup.
+previous copy is moved to a timestamped backup in `~/.claude/skill-backups/`.
 
 **Coming from 1.x (`presales-agent` plugin)** — the plugin was renamed in 2.0, so
 `update` will not find it. Remove the old one and install the new one:
