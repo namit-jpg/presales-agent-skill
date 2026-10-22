@@ -50,7 +50,7 @@ Prefer to read a script before running it? Download
 
 1. [Download the repository as a ZIP](https://github.com/namit-jpg/presales-agent-skill/archive/refs/heads/main.zip)
    and extract it.
-2. Copy the folder `plugins/presales-agent/skills/presales-agent` into your skills
+2. Copy the folder `plugins/wd-presales-skill2/skills/presales-agent` into your skills
    directory, so that `SKILL.md` ends up at:
    - Windows — `%USERPROFILE%\.claude\skills\presales-agent\SKILL.md`
    - macOS / Linux — `~/.claude/skills/presales-agent/SKILL.md`
@@ -75,12 +75,42 @@ claude plugin marketplace add namit-jpg/presales-agent-skill
 ```
 
 ```bash
-claude plugin install presales-agent@presales-skills
+claude plugin install wd-presales-skill2@presales-skills
 ```
 
 Inside a Claude Code CLI session you can use the interactive equivalents,
 `/plugin marketplace add namit-jpg/presales-agent-skill` then `/plugin install`.
-Later, `claude plugin marketplace update presales-skills` pulls the newest version.
+
+### Update
+
+**Plugin install** — refresh the marketplace, then update the plugin, then
+restart Claude Code:
+
+```bash
+claude plugin marketplace update presales-skills
+```
+
+```bash
+claude plugin update wd-presales-skill2@presales-skills
+```
+
+**One-line installer or manual copy** — run the same install line again. The
+previous copy is moved to a timestamped backup.
+
+**Coming from 1.x (`presales-agent` plugin)** — the plugin was renamed in 2.0, so
+`update` will not find it. Remove the old one and install the new one:
+
+```bash
+claude plugin uninstall presales-agent@presales-skills
+```
+
+```bash
+claude plugin marketplace update presales-skills
+```
+
+```bash
+claude plugin install wd-presales-skill2@presales-skills
+```
 
 ### Uninstall
 
@@ -89,7 +119,7 @@ rm -rf ~/.claude/skills/presales-agent
 ```
 
 Windows: `Remove-Item -Recurse -Force "$HOME\.claude\skills\presales-agent"`.
-If you installed the plugin instead: `claude plugin uninstall presales-agent`.
+If you installed the plugin instead: `claude plugin uninstall wd-presales-skill2`.
 
 ## Use
 
@@ -113,7 +143,7 @@ Three built-in test scenarios need no discovery conversation: `Run Test 1`
 
 ```
 .claude-plugin/marketplace.json     marketplace manifest
-plugins/presales-agent/
+plugins/wd-presales-skill2/
   .claude-plugin/plugin.json        plugin manifest
   skills/presales-agent/
     SKILL.md                        the workflow

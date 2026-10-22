@@ -7,13 +7,13 @@
   },
   "plugins": [
     {
-      "name": "presales-agent",
+      "name": "wd-presales-skill2",
       "description": "Turns a Salesforce client discovery conversation into a client-readable BRD (scope of work with solution approach and effort), quality review, sprint plan, and timeline — acting as a Certified Technical Architect and Senior Presales Business Analyst. Outputs JSON plus formatted Excel workbooks.",
       "author": {
         "name": "namit-jpg"
       },
       "category": "productivity",
-      "source": "./plugins/presales-agent"
+      "source": "./plugins/wd-presales-skill2"
     }
   ]
 }

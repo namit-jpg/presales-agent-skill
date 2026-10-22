@@ -1,5 +1,5 @@
 {
-  "name": "presales-agent",
+  "name": "wd-presales-skill2",
   "description": "Salesforce presales documentation workflow — turns a client discovery conversation into a client-readable BRD (scope of work with solution approach and effort), quality review, sprint plan, and timeline, with Excel output.",
   "version": "2.0.0",
   "author": {

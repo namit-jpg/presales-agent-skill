@@ -12,7 +12,7 @@ $branch = if ($env:BRANCH) { $env:BRANCH } else { 'main' }
 $name   = 'presales-agent'
 $base   = if ($env:CLAUDE_CONFIG_DIR) { $env:CLAUDE_CONFIG_DIR } else { Join-Path $HOME '.claude' }
 $target = Join-Path $base "skills\$name"
-$inner  = "presales-agent-skill-$branch\plugins\$name\skills\$name"
+$inner  = "presales-agent-skill-$branch\plugins\wd-presales-skill2\skills\$name"
 
 function Say  { param($m) Write-Host "  $m" }
 function Fail { param($m) Write-Host ""; Write-Host "  Error: $m" -ForegroundColor Red; Write-Host ""; exit 1 }

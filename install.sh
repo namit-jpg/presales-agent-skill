@@ -13,7 +13,7 @@ BRANCH="${BRANCH:-main}"
 NAME="presales-agent"
 BASE="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 TARGET="$BASE/skills/$NAME"
-INNER="presales-agent-skill-$BRANCH/plugins/$NAME/skills/$NAME"
+INNER="presales-agent-skill-$BRANCH/plugins/wd-presales-skill2/skills/$NAME"
 
 say()  { printf '  %s\n' "$1"; }
 fail() { printf '\n  Error: %s\n\n' "$1" >&2; exit 1; }
