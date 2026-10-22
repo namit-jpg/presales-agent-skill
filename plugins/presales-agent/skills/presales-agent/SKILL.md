@@ -3,12 +3,13 @@ name: presales-agent
 description: >
   Runs a Salesforce presales documentation workflow — acting as a Certified Technical
   Architect (CTA) and Senior Presales Business Analyst to turn a client discovery
-  conversation into a BRD (scope matrix), sprint plan, timeline, and quality review.
-  Use when the user asks to start/run a presales engagement, scope a Salesforce
-  project, build a BRD / scope matrix / sprint plan / timeline / effort estimate for a
-  client, or says things like "start a new engagement for [client]", "run presales
-  for [client]", "build a BRD for [client]", "build a scope for [client]", or
-  "resume [client] from scope/review/sprint".
+  conversation into a client-readable BRD (Scope of Work with solution approach and
+  effort, Out of Scope, Business Process Guide), sprint plan, timeline, and quality
+  review. Use when the user asks to start/run a presales engagement, scope a
+  Salesforce project, build a BRD / scope of work / SOW / sprint plan / timeline /
+  effort estimate for a client, or says things like "start a new engagement for
+  [client]", "run presales for [client]", "build a BRD for [client]", "build a scope
+  for [client]", or "resume [client] from scope/review/sprint".
 ---
 
 # Presales Agent
@@ -28,11 +29,17 @@ templates/    - brd_template.xlsx — the MANDATORY BRD output format
 scripts/      - generate_xlsx.js — converts JSON outputs to Excel
 ```
 
+**The BRD is written for the client to read.** Its business columns are plain
+English that a business owner with no Salesforce knowledge can accept or reject
+line by line. It contains no "Assuming…" statements: every point is something
+we will deliver, something the client must supply, or something not included.
+Salesforce terms belong only in the Solution Approach column.
+
 **The BRD template is not optional.** `templates/brd_template.xlsx` defines the
-BRD's column layout, and `generate_xlsx.js` produces the BRD by populating that
-file. Never hand-build a BRD workbook, never reorder or invent columns, and
-never write the BRD by any route other than the generator. If the template is
-missing, the generator stops rather than improvising a layout.
+BRD's sheets, columns and styling, and `generate_xlsx.js` produces the BRD by
+populating that file. Never hand-build a BRD workbook, never reorder or invent
+columns, and never write the BRD by any route other than the generator. If the
+template is missing, the generator stops rather than improvising a layout.
 
 ## Locating this skill (SKILL_DIR)
 
@@ -45,8 +52,8 @@ path from another machine:
 - Copied manually: `~/.claude/skills/presales-agent`
   (Windows: `%USERPROFILE%\.claude\skills\presales-agent`)
 
-**First run only** — the generator depends on the `xlsx` package. If
-`<SKILL_DIR>/scripts/node_modules` does not exist, install it once:
+**First run only** — the generator depends on the `exceljs` package. If
+`<SKILL_DIR>/scripts/node_modules/exceljs` does not exist, install it once:
 
 ```bash
 npm install --prefix "<SKILL_DIR>/scripts"
@@ -79,6 +86,9 @@ recognisable word/abbreviation, lowercase it, replace spaces/hyphens with unders
 Derive the slug at the start of each engagement and use it consistently. Before
 writing any file, create the folder if missing: `mkdir -p "opportunities/<ClientName>"`.
 
+Dates shown to the user or written into prose use the `dd MMM yyyy` format
+(e.g. `14 Oct 2026`). JSON date fields stay ISO (`YYYY-MM-DD`).
+
 ## Step-by-step execution
 
 ### STEP 1 — Context Elicitation
@@ -89,6 +99,12 @@ Conduct a structured discovery conversation across all 7 dimensions. Ask ONE
 dimension at a time — never all at once. Confirm your understanding after each
 answer before moving on. Flag if a product mentioned isn't the correct SKU name.
 
+Discovery carries more weight than it used to: the BRD states facts — user
+counts, named roles, status lists, approval levels, record volumes, system
+names — and every one of them must come from here. Capture the client's own
+terms and acronyms, walk their end-to-end process, and record whatever cannot
+be answered as an open question. Never fill a gap with a plausible guess.
+
 When complete, derive `<ClientName>`/`<slug>`, create the folder, then write the
 engagement context (matching `schemas/engagement_context.ts`) to:
 `opportunities/<ClientName>/<slug>_engagement_context.json`
@@ -96,17 +112,20 @@ engagement context (matching `schemas/engagement_context.ts`) to:
 ```json
 {
   "clientName": "...", "projectName": "...", "industry": "...", "region": "...",
-  "engagementType": "Greenfield|Migration|Enhancement",
+  "engagementType": "Greenfield|Migration|Enhancement", "implementationPartner": "...",
   "products": [{"sku": "...", "confirmed": true}],
   "businessUnits": [], "userPersonas": [{"name": "...", "count": 0, "department": "..."}],
   "keyProcesses": [{"name": "...", "module": "...", "classification": "...", "priority": "Phase 1|2|3"}],
+  "processSteps": [{"step": "New enquiry", "whatHappens": "...", "where": "Salesforce"}],
+  "clientTerms": [{"term": "QRF", "meaning": "Quote Request Form ...", "usedFor": "..."}],
   "painPoints": [], "kpis": [],
   "integrationSystems": [{"systemName": "...", "direction": "inbound|outbound|bidirectional"}],
   "dataVolumes": {"accounts": 0, "cases": 0, "workOrders": 0, "contacts": 0},
   "dataMigration": {"required": true, "sourceSystem": "...", "objects": []},
   "phasing": "Single Phase|Phase 1/2|Phase 1/2/3",
-  "goLiveDatePhase1": "YYYY-MM-DD",
+  "goLiveDatePhase1": "YYYY-MM-DD", "implementationWeeks": 15,
   "stakeholderDependencies": [],
+  "openQuestions": [{"question": "...", "owner": "...", "relatesTo": "..."}],
   "phase": "context", "lastUpdated": "ISO date", "version": "1.0",
   "qualityGates": {
     "allDimensionsPopulated": true, "productsConfirmed": true,
@@ -120,66 +139,80 @@ engagement context (matching `schemas/engagement_context.ts`) to:
 ### STEP 2 — BRD Building
 
 **Read first:**
-`references/scope_building.md`, `references/assumption_writing.md`,
-`references/effort_estimation.md`, `references/assumption_patterns.md`,
-`references/products_catalog.md`, `references/scope_patterns.md`,
-`references/solution_approach_patterns.md`
+`references/scope_building.md`, `references/requirement_writing.md`,
+`references/scope_boundary_patterns.md`, `references/solution_approach_patterns.md`,
+`references/effort_estimation.md`, `references/products_catalog.md`,
+`references/scope_patterns.md`
 
-Generate a complete BRD — one row per Sub-Module — using the engagement
-context from Step 1. Tell the user: "Generating BRD for [client]... this
-may take a moment." Write the JSON array (matching `schemas/brd_row.ts`) to
-`opportunities/<ClientName>/<slug>_brd.json`, using this row shape:
+Generate the complete BRD — one row per requirement — from the engagement
+context. Tell the user: "Generating BRD for [client]... this may take a
+moment." Write the document (matching `schemas/brd_row.ts`) to
+`opportunities/<ClientName>/<slug>_brd.json`:
 
 ```json
 {
-  "auditComments": "", "brn": "1", "subBrn": 1.1,
-  "module": "Case Management", "subModule": "Case Creation via WhatsApp",
-  "phase": "Phase 1",
-  "description": "[Client] requires the platform to enable case creation via WhatsApp so that customers can report issues on their preferred channel.",
-  "functionalAssumptions": ["Assuming a maximum of 5 WhatsApp message templates are configured.", "..."],
-  "technicalAssumptions": ["Assuming Digital Engagement license is procured with sufficient conversation credits.", "..."],
-  "solutionApproach": "Configure Digital Engagement WhatsApp channel, Omni-Channel routing rules, and case auto-creation flow.",
-  "impApproach": "Build in Sprint 1 after org setup; depends on the client's WABA number being approved before configuration starts.",
-  "artifactCounts": {
-    "objects": {"simple": 0, "medium": 0, "complex": 0},
-    "objectAutomations": {"simple": 1, "medium": 0, "complex": 0},
-    "recordTypes": {"simple": 0, "medium": 0, "complex": 0},
-    "pageLayouts": {"simple": 0, "medium": 0, "complex": 0},
-    "flows": {"simple": 0, "medium": 1, "complex": 0},
-    "triggers": {"simple": 0, "medium": 0, "complex": 0},
-    "apexClasses": {"simple": 0, "medium": 0, "complex": 0},
-    "lwc": {"simple": 0, "medium": 0, "complex": 0},
-    "customUiUx": {"simple": 0, "medium": 0, "complex": 0},
-    "partnerApp": {"simple": 0, "medium": 0, "complex": 0},
-    "apis": {"simple": 0, "medium": 0, "complex": 0},
-    "batchExecution": {"simple": 0, "medium": 0, "complex": 0},
-    "reports": {"simple": 0, "medium": 0, "complex": 0},
-    "dashboard": {"simple": 0, "medium": 0, "complex": 0},
-    "orgSetup": {"simple": 0, "medium": 1, "complex": 0},
-    "dataMigration": {"simple": 0, "medium": 0, "complex": 0}
-  },
-  "miscManualEfforts": 0,
-  "effortHours": 6, "reviewComments": "",
-  "customerDocRef": "REQ-001", "salesforceSkuName": "Service Cloud EE",
-  "isPartOfRequirementDoc": "Yes", "classification": "Config+Custom"
+  "clientName": "Northwind", "version": "1.0", "lastUpdated": "2026-10-14",
+  "processSummary": "One joined sales process across both regional offices, ...",
+  "processSteps": [
+    {"step": "New enquiry", "whatHappens": "A potential project is recorded from the website, a salesperson or a tender.", "where": "Salesforce"}
+  ],
+  "glossary": [
+    {"term": "DAF", "meaning": "Discount Approval Form.", "usedFor": "Seeking permission for a changed discount"}
+  ],
+  "rows": [
+    {
+      "requirementId": "5.2",
+      "businessArea": "New Project Enquiries",
+      "subBusinessModule": "Regional Enquiry Allocation",
+      "requirement": "Sending new enquiries to the right sales team",
+      "description": [
+        "New enquiries will be directed to the appropriate regional team using the project country, type of building and enquiry source.",
+        "Every enquiry is routed to the regional Sales Head first, who then reassigns it to the relevant salesperson.",
+        "Enquiries whose region cannot yet be identified go to one common receiving queue."
+      ],
+      "informationRequired": [
+        "Northwind will provide the country, region and sales owner assignment rules during Discovery Week."
+      ],
+      "solutionApproach": "Lead Assignment Rules on country, building type and source into regional queues owned by each Sales Head, with a catch-all queue for unmatched enquiries.",
+      "effortHours": 4,
+      "notIncluded": [
+        "Automatic round-robin assignment to individual salespeople is not included."
+      ],
+      "phase": "Phase 1", "salesforceSkuName": "Sales Cloud", "classification": "Config",
+      "sourceRefs": ["Discovery 08 Oct 2026 — routing walkthrough"]
+    }
+  ]
 }
 ```
 
-Two fields carry different jobs — keep them distinct:
-- **solutionApproach** (template column I) — WHAT gets built, in Salesforce
-  terms. 1–3 sentences. See `references/solution_approach_patterns.md`.
-- **impApproach** (column J) — HOW it gets delivered: sequencing, prerequisites,
-  dependencies on other rows or on client actions.
+Column by column (template order):
 
-**artifactCounts are descriptive, not a pricing formula.** They record how many
-of each thing gets built so the client can see the shape of the work. They are
-NOT multiplied by per-item rates. `effortHours` is set directly — see
-`references/effort_estimation.md` (AI-assisted delivery: review, validation,
-UAT sign-off; typically 2–16h). Put scoped manual work with no artifact of its
-own — workshops, documentation, client coordination — in `miscManualEfforts`.
+| Col | Field | What goes in it |
+|---|---|---|
+| A | `requirementId` | "1.1" — area number, then position |
+| B | `businessArea` | Business domain in the client's language |
+| C | `subBusinessModule` | Short capability name; client acronyms expanded |
+| D | `requirement` | The need, phrased the way the client would say it |
+| E | `description[]` | What we will deliver — plain English, concrete, enumerated |
+| F | `informationRequired[]` | What the client must supply or decide, and by when |
+| G | `solutionApproach` | How it is built, in Salesforce terms, 1–3 sentences |
+| H | `effortHours` | One hours figure for the requirement |
 
-The last four fields have no column in the BRD template. They stay in the JSON
-for the Step 3 review and are not written to the workbook.
+`notIncluded[]` feeds the **Out of Scope** sheet; `processSummary`,
+`processSteps` and `glossary` feed the **Business Process Guide** sheet; the
+**Effort Summary** sheet is computed. `phase`, `salesforceSkuName`,
+`classification`, `sourceRefs` and `reviewComments` stay in the JSON for the
+review and sprint planning and are not written to the workbook.
+
+**Never invent facts.** Where discovery did not give you a number or list,
+write the description by reference to what the client will confirm and add
+the matching `informationRequired` point. Record the source of each figure in
+`sourceRefs`.
+
+**Effort** is one direct estimate per row — see
+`references/effort_estimation.md` (AI-assisted delivery: design confirmation,
+review, validation, sign-off; typically 2–16h). Data migration rows use
+`classification: "Data Migration"` so sprint planning can separate them.
 
 **After writing the JSON**, run the generator. It populates
 `templates/brd_template.xlsx` — this is the only supported way to produce the
@@ -189,19 +222,23 @@ BRD:
 node "<SKILL_DIR>/scripts/generate_xlsx.js" brd "opportunities/<ClientName>" <slug>
 ```
 
-This produces `opportunities/<ClientName>/<slug>_brd.xlsx` (3 sheets: BRD,
-Summary, Open Clarifications).
+This produces `opportunities/<ClientName>/<slug>_brd.xlsx` (4 sheets: Scope of
+Work, Out of Scope, Business Process Guide, Effort Summary). The generator
+validates required fields and refuses the retired assumption-based format.
 
-**Quality gate:** every row has BOTH functional AND technical assumptions
-(minimum 3 each for complex items).
+Then list for the user every point you deferred to Information Required
+because discovery did not answer it, so they can close what they already know.
+
+**Quality gate:** every row has a description, a solution approach and an
+effort; no row contains "Assuming" or "etc."; every figure has a source.
 
 ### STEP 3 — Review & Gap Analysis
 
 **Read first:** `references/scope_review.md`, `references/review_checklist.md`
 
-Review every BRD row across all 8 dimensions (completeness, assumption quality,
-technical architecture, commercial scope protection, license alignment, dependency
-mapping, effort sanity, sprint readiness). Write the review to
+Review every BRD row across all 8 dimensions (completeness, fact integrity,
+client readability, scope boundaries, technical architecture, licence
+alignment, dependencies & effort, sprint readiness). Write the review to
 `opportunities/<ClientName>/<slug>_review_report.md`:
 
 ```markdown
@@ -223,7 +260,7 @@ mapping, effort sanity, sprint readiness). Write the review to
 | LOW | N |
 
 ## Detailed Flags
-### [SEVERITY] BRN.subBrn — Sub-Module Name
+### [SEVERITY] Requirement ID — Requirement
 **Dimension:** [Which of 8 dimensions]
 **Issue:** [Specific problem]
 **Recommendation:** [How to fix]
@@ -235,6 +272,9 @@ mapping, effort sanity, sprint readiness). Write the review to
 **Scoring:** `100 - (CRITICAL×15) - (HIGH×5) - (MEDIUM×2) - (LOW×0.5)`
 **Verdict:** READY if score ≥85 and zero CRITICAL flags.
 
+Open clarifications are internal: they live in the review report, not in the
+client workbook. Fixes go into `<slug>_brd.json`, then regenerate.
+
 **If CRITICAL flags exist:** stop. Present them to the user. Do not proceed to
 sprint planning until they're resolved.
 
@@ -244,7 +284,9 @@ sprint planning until they're resolved.
 
 Ask the user: "How many developers on the build team? (default: 3)". Calculate and
 write the sprint plan (matching `schemas/sprint_plan.ts`) to
-`opportunities/<ClientName>/<slug>_sprint_plan.json`:
+`opportunities/<ClientName>/<slug>_sprint_plan.json`. `totalGrandEffort` is the
+BRD total; `totalDataLoadEffort` is the sum over rows classified
+"Data Migration"; `moduleEfforts` has one entry per Business Area.
 
 ```json
 {
@@ -254,7 +296,7 @@ write the sprint plan (matching `schemas/sprint_plan.ts`) to
     "balanceEffort": 150, "preSprintWeeks": 8, "postSprintWeeks": 6, "totalProjectWeeks": 22
   },
   "moduleEfforts": [
-    {"module": "Case Management", "phase": "Phase 1", "totalEffort": 200, "dataLoadEffort": 0, "devEffort": 200, "sprintAssignment": [1,2]}
+    {"module": "New Project Enquiries", "phase": "Phase 1", "totalEffort": 200, "dataLoadEffort": 0, "devEffort": 200, "sprintAssignment": [1,2]}
   ],
   "weeklyGrid": [
     {"weekNumber": 1, "phase": "Discovery Kickoff", "allocation": {"ba": 40, "sa": 40, "developers": [0,0,0], "ds": 0, "qa": 0}, "totalHours": 80}
@@ -298,11 +340,12 @@ Tell the user:
 ```
 ✅ PRESALES ARTEFACTS READY — <ClientName>
 
-📁 opportunities/<ClientName>/<slug>_brd.xlsx             — [N] rows, [X]h total
+📁 opportunities/<ClientName>/<slug>_brd.xlsx             — [N] requirements, [X]h total, [M] with exclusions
 📁 opportunities/<ClientName>/<slug>_sprint_plan.xlsx     — [N] sprints, [X] weeks
 📁 opportunities/<ClientName>/<slug>_timeline.xlsx        — Project timeline
 📁 opportunities/<ClientName>/<slug>_review_report.md     — Quality score: [X]/100
 
+[K] items are waiting on information from <ClientName> (column F).
 Open the xlsx files in Excel for final presentation.
 ```
 
@@ -318,10 +361,21 @@ folder in the current project). Re-derive the slug before loading files.
 - "regenerate brd" → run the same script with `brd` instead of `all`
 
 Regenerating always re-populates the template from `<slug>_brd.json`. To change
-the BRD's columns, edit `templates/brd_template.xlsx` — never patch the output
-workbook by hand, or the next regeneration silently discards the edit.
+the BRD's columns or styling, edit `templates/brd_template.xlsx` — never patch
+the output workbook by hand, or the next regeneration silently discards the edit.
+
+**Older engagements:** a `<slug>_brd.json` that is a bare array of rows (with
+`functionalAssumptions`, `technicalAssumptions`, `artifactCounts`) is the
+retired format, and the generator refuses it. Convert it before regenerating:
+rewrite each row's description and assumptions into `description`,
+`informationRequired` and `notIncluded` per `references/requirement_writing.md`,
+keep `solutionApproach` and `effortHours`, drop the rest, and ask the user for
+any fact the old assumptions only guessed at.
 
 ## Test scenarios (no discovery needed)
+
+Test scenarios supply the discovery facts below; anything they do not state
+becomes Information Required, exactly as in a live engagement.
 
 **"Run Test 1" / "ACME Electronics UAE"** — Consumer Electronics After-Sales, UAE.
 Service Cloud EE, Field Service Plus, Digital Engagement. 50 agents, 120 technicians,
@@ -348,26 +402,22 @@ Einstein/Agentforce. Full service + field + portal + AI + 6 integrations. Expect
 
 ## Non-negotiable quality rules
 
-1. NEVER write an assumption without a number, a cap, or a named feature.
-2. NEVER use 'etc.' in any assumption — enumerate explicitly.
-3. NEVER reference a Salesforce product without its correct commercial SKU name.
-4. NEVER skip the Review step — even if scope looks complete.
-5. ALWAYS flag if a capability needs a license not yet confirmed.
-6. ALWAYS separate Data Load effort from Development effort in sprint calculations.
-7. ALWAYS include client responsibilities in functional assumptions.
-8. NEVER proceed past CRITICAL review flags without user acknowledgment.
-9. ALWAYS produce the BRD by running the generator against
-   `templates/brd_template.xlsx`. Never hand-build the workbook, never reorder
-   or add columns, and never edit the generated xlsx directly.
-
-## Assumption writing rules
-
-- Start every assumption with 'Assuming'.
-- Quantify every assumption (number, feature name, cap).
-- Client responsibilities: 'Assuming [client] will provide/confirm [X] prior to [milestone].'
-- Exclusions: '[Feature] is NOT considered in the current scope.'
-- Minimum 3 functional + 3 technical assumptions per row for Config+Custom or
-  Integration items.
+1. NEVER write "Assuming" in the BRD. Each point is a deliverable, a client
+   input, or an exclusion — put it in the matching column.
+2. NEVER invent a number, list, name or system. Facts come from discovery or
+   client documents; unknowns become Information Required.
+3. NEVER use 'etc.', 'and more', 'as needed' or open lists — enumerate explicitly.
+4. NEVER put Salesforce build vocabulary in the Requirement Description;
+   it belongs in Solution Approach.
+5. NEVER reference a Salesforce product without its correct commercial SKU name.
+6. NEVER skip the Review step — even if scope looks complete.
+7. ALWAYS give every Information Required point a timing anchor.
+8. ALWAYS flag if a capability needs a licence not yet confirmed.
+9. ALWAYS separate Data Load effort from Development effort in sprint calculations.
+10. NEVER proceed past CRITICAL review flags without user acknowledgment.
+11. ALWAYS produce the BRD by running the generator against
+    `templates/brd_template.xlsx`. Never hand-build the workbook, never reorder
+    or add columns, and never edit the generated xlsx directly.
 
 ## Sprint planning rules
 
@@ -379,10 +429,11 @@ Einstein/Agentforce. Full service + field + portal + AI + 6 integrations. Expect
 
 ## Effort reference (quick guide)
 
-One direct `effortHours` estimate per row — human review/validation/UAT time
-on an AI-agent-assisted build, not full manual-build hours.
+One direct `effortHours` estimate per requirement — human design, review,
+validation and sign-off time on an AI-agent-assisted build, not full
+manual-build hours.
 
-| Row complexity | effortHours |
+| Requirement complexity | effortHours |
 |---|---|
 | Simple | 2–5h |
 | Medium | 5–10h |

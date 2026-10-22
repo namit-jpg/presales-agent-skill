@@ -4,6 +4,6 @@
   "private": true,
   "description": "xlsx generator used by the presales-agent Claude Code skill",
   "dependencies": {
-    "xlsx": "^0.18.5"
+    "exceljs": "^4.4.0"
   }
 }

@@ -1,72 +1,48 @@
 import { z } from 'zod';
 
 /**
- * One BRD row = one Sub-Module, matching templates/brd_template.xlsx exactly.
- * Template column letters are noted against each field.
+ * The BRD is one JSON document (<slug>_brd.json) that populates every sheet of
+ * templates/brd_template.xlsx:
  *
- * Artifact counts are DESCRIPTIVE scope detail — how many of each thing gets
- * built. They are NOT multiplied by per-item rates to derive effortHours;
- * see references/effort_estimation.md for the effort model actually in use.
+ *   Scope of Work          — one row per requirement (columns A–H, noted below)
+ *   Out of Scope           — every row whose notIncluded list is non-empty
+ *   Business Process Guide — processSummary, processSteps, glossary
+ *   Effort Summary         — effortHours totalled by businessArea
+ *
+ * The document is written for the client to read. Nothing in it is an
+ * "assumption": each point is either something we will deliver (description),
+ * something the client must supply (informationRequired), or something that
+ * is not included (notIncluded).
  */
 
-const Tier = z.object({
-  simple: z.number().int().min(0),
-  medium: z.number().int().min(0),
-  complex: z.number().int().min(0),
-});
-
-export const ArtifactCountsSchema = z.object({
-  objects: Tier,            // K–M
-  objectAutomations: Tier,  // N–P
-  recordTypes: Tier,        // Q–S
-  pageLayouts: Tier,        // T–V
-  flows: Tier,              // W–Y
-  triggers: Tier,           // Z–AB
-  apexClasses: Tier,        // AC–AE  (template label: "Apex Classes (3)")
-  lwc: Tier,                // AF–AH
-  customUiUx: Tier,         // AI–AK
-  partnerApp: Tier,         // AL–AN
-  apis: Tier,               // AO–AQ
-  batchExecution: Tier,     // AR–AT
-  reports: Tier,            // AU–AW
-  dashboard: Tier,          // AX–AZ
-  orgSetup: Tier,           // BA–BC
-  dataMigration: Tier,      // BD–BF
-});
-
 export const BrdRowSchema = z.object({
-  auditComments: z.string().optional(),          // A
-  brn: z.string(),                               // B (written as "<brn>.<subBrn>")
-  subBrn: z.number(),                            // B
-  module: z.string(),                            // C
-  subModule: z.string(),                         // D
-  phase: z.enum(['Phase 1', 'Phase 2', 'Phase 3']), // E
-  description: z.string(),                       // F
-  functionalAssumptions: z.array(z.string()),    // G
-  technicalAssumptions: z.array(z.string()),     // H
-
-  // I — WHAT is being built, in Salesforce terms. 1–3 sentences.
+  // A — "1.1", "5.10". Business-area number, then position within it.
+  requirementId: z.string().regex(/^\d+\.\d+$/),
+  // B — plain-language business area, e.g. "New Project Enquiries".
+  businessArea: z.string(),
+  // C — short noun-phrase name for the capability. Client acronyms are
+  // expanded on first use: "DAF (Discount Approval Form) | Discount and Margin Approval".
+  subBusinessModule: z.string(),
+  // D — the requirement as the client would say it, e.g. "Who can see customer and sales information".
+  requirement: z.string(),
+  // E — what will be delivered, one point per entry. Plain business English,
+  // concrete numbers and named lists, no "Assuming", no "etc.".
+  description: z.array(z.string()).min(1),
+  // F — what the client must provide or decide, and by when. Empty → "None".
+  informationRequired: z.array(z.string()).default([]),
+  // G — HOW it will be built, in Salesforce terms. 1–3 sentences.
   solutionApproach: z.string(),
-  // J — HOW it gets delivered: sequencing, dependencies, prerequisites.
-  impApproach: z.string(),
-
-  artifactCounts: ArtifactCountsSchema,          // K–BF
-
-  // BG — hours for scoped manual work with no artifact of its own
-  // (workshops, documentation, client-side coordination).
-  miscManualEfforts: z.number().min(0).default(0),
-
-  // BH — the row's effort estimate. AI-assisted delivery: human review,
-  // validation, and UAT sign-off. Typically 2–16h. NOT rate-derived.
+  // H — hours for this requirement (AI-assisted delivery; see references/effort_estimation.md).
   effortHours: z.number().min(0).max(300),
 
-  reviewComments: z.string().optional(),         // BI
+  // Out of Scope sheet — things a reader might reasonably expect from this
+  // requirement that are not included. Each entry ends "... are not included."
+  notIncluded: z.array(z.string()).default([]),
 
-  // Retained for review/traceability. No column in the BRD template —
-  // these stay in the JSON and are not written to the workbook.
-  customerDocRef: z.string().optional(),
+  // Internal fields — kept in the JSON for review and sprint planning, never
+  // written to the workbook.
+  phase: z.enum(['Phase 1', 'Phase 2', 'Phase 3']).default('Phase 1'),
   salesforceSkuName: z.string().optional(),
-  isPartOfRequirementDoc: z.enum(['Yes', 'No']).optional(),
   classification: z.enum([
     'Config',
     'Custom',
@@ -75,9 +51,35 @@ export const BrdRowSchema = z.object({
     'Config+Integration',
     'Custom+Integration',
     'Config+Custom+Integration',
-    'OOTB+Config',
+    'Data Migration',
   ]).optional(),
+  // Where each number/name in the row came from (discovery note, client doc
+  // section, meeting date). Review flags any figure with no source.
+  sourceRefs: z.array(z.string()).optional(),
+  reviewComments: z.string().optional(),
+});
+
+export const ProcessStepSchema = z.object({
+  step: z.string(),          // "New enquiry"  (numbered by the generator)
+  whatHappens: z.string(),   // one or two plain sentences
+  where: z.string(),         // "Salesforce and Slack"
+});
+
+export const GlossaryTermSchema = z.object({
+  term: z.string(),          // "QRF"
+  meaning: z.string(),       // "Quote Request Form describing the building and engineering requirements."
+  usedFor: z.string().optional(),
+});
+
+export const BrdDocumentSchema = z.object({
+  clientName: z.string(),    // replaces {Client} in sheet headers and titles
+  version: z.string(),
+  lastUpdated: z.string(),
+  processSummary: z.string().optional(),  // one sentence under the guide title
+  processSteps: z.array(ProcessStepSchema).default([]),
+  glossary: z.array(GlossaryTermSchema).default([]),
+  rows: z.array(BrdRowSchema).min(1),
 });
 
 export type BrdRow = z.infer<typeof BrdRowSchema>;
-export type ArtifactCounts = z.infer<typeof ArtifactCountsSchema>;
+export type BrdDocument = z.infer<typeof BrdDocumentSchema>;

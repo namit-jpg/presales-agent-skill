@@ -1,78 +1,80 @@
 ---
 skill: scope_review
-version: 1.0
+version: 2.0
 description: >
-  Performs a CTA-level quality review of the complete scope matrix.
-  Flags gaps, contradictions, risks, and missing assumptions.
+  Performs a CTA-level quality review of the complete BRD. Flags invented
+  facts, unreadable phrasing, scope gaps, contradictions and risks.
 ---
 
-# Scope Review & Gap Analysis Skill
+# BRD Review & Gap Analysis Skill
 
 ## Review Dimensions
 
-Evaluate EVERY scope row across the following 8 dimensions:
+Evaluate EVERY requirement across the following 8 dimensions. Checklist with
+severities: `references/review_checklist.md`.
 
-### 1. Completeness Check
-- Does the row have BOTH functional AND technical assumptions?
-- Are all 16 artifact buckets either populated or explicitly set to 0?
-- Does the row have an effortHours value (0 only for informational rows)?
-- Are Solution Approach and Imp Approach both present and distinct?
-- Is the SKU name correctly specified?
-- Does the description follow the standard pattern?
+### 1. Completeness
+- All eight Scope of Work columns populated (Information Required may be "None")?
+- Solution Approach present for every row?
+- Effort set, and non-zero where work is needed?
+- SKU and classification set in the JSON?
+- Process guide and glossary present?
 
-### 2. Assumption Quality Check
-- Are assumptions quantified? (count caps, date commitments, named features)
-- Are client responsibilities clearly delineated?
-- Are exclusions explicitly stated?
-- Is the word 'etc.' present? (RED FLAG — must be eliminated)
+### 2. Fact Integrity (the most important dimension)
+- Does every number, list, name and system trace to the engagement context or
+  a client source? Check `sourceRefs`.
+- Has anything been filled in that the client never said? An invented figure
+  is CRITICAL — replace it with a reference to what the client will confirm,
+  and add the matching Information Required point.
 
-### 3. Scope Creep Risk
-- Does the description imply work beyond what the assumptions cap?
-- Are open-ended phrases present ('as needed', 'and other', 'similar features')?
-- Are downstream dependencies assumed but not scoped?
+### 3. Client Readability
+- Could a business owner with no Salesforce knowledge read the description and
+  know exactly what they get?
+- Any "Assuming", "etc.", open-ended phrases, or build vocabulary in the
+  description?
+- Acronyms expanded? Roles named?
 
-### 4. Technical Architecture Review (CTA Layer)
-- Is the implementation approach consistent with SF best practices?
-- Are governor limits acknowledged where relevant?
-- Are integrations assuming middleware without specifying it?
-- Is Agentforce/Einstein referenced without license confirmation?
-- Are any deprecated features referenced?
+### 4. Scope Boundaries
+- Does each row say what the client must supply, and when?
+- Are the exclusions a reader might over-read recorded on the Out of Scope
+  sheet?
+- Are third-party dependencies and fees stated?
 
-### 5. License/Product Alignment
-- Is the correct Salesforce SKU referenced for the capability described?
-- e.g., WhatsApp requires 'Digital Engagement' license
-- e.g., FSL Optimizer requires 'Field Service Plus' (not Standard)
-- e.g., Agentforce requires 'Einstein / Agentforce' licensing
+### 5. Technical Architecture (CTA layer)
+- Is the Solution Approach consistent with Salesforce best practice?
+- Does it deliver exactly what the description promises — no more, no less?
+- Integrations: direction, middleware, frequency, failure handling?
+- Any deprecated features?
 
-### 6. Dependency Mapping
-- Does this line item depend on another that hasn't been scoped?
-- Are prerequisite line items sequenced correctly?
-- Are data migration dependencies called out in technical assumptions?
+### 6. License / Product Alignment
+- Correct SKU for the capability (WhatsApp → Digital Engagement; Optimizer →
+  Field Service Plus; Agentforce → Einstein / Agentforce)?
+- Licence counts consistent with the user numbers in the description?
 
-### 7. Effort Sanity Check
-- Is effortHours proportionate to the row's stated complexity (see references/effort_estimation.md ranges)?
-- Is effortHours consistent with the artifact counts — a row claiming several
-  complex Apex classes but 2h of effort is a contradiction worth flagging.
-- Are there 0-effort rows that clearly require work?
-- Are there rows above ~16h that should be split into smaller sub-modules instead?
+### 7. Dependencies & Effort
+- Does a row depend on another that is not scoped? Are cross-references valid?
+- Is effort proportionate to the description and solution approach?
+- Rows above ~16h: justified or split?
 
-### 8. Sprint Planning Readiness
-- Can each row be built in a sprint without cross-row dependency issues?
-- Are items that MUST be built together in the same sprint phase?
+### 8. Sprint Readiness
+- Can each row be built in a sprint without unresolved client inputs blocking
+  it? Rows waiting on a vendor feed or client decision are flagged so sprint
+  planning schedules them late.
 
 ## Flag Severity Levels
 
 | Severity | Definition | Action |
 |----------|-----------|--------|
-| CRITICAL | Scope gap that will lead to change request or commercial dispute | Must resolve before sign-off |
-| HIGH | Missing assumption that creates ambiguity during build | Resolve before sprint start |
-| MEDIUM | Sub-optimal phrasing or incomplete quantification | Recommend improvement |
+| CRITICAL | Invented fact, open-ended promise, or gap that will lead to a change request or commercial dispute | Must resolve before sign-off |
+| HIGH | Missing boundary or dependency that creates ambiguity during build | Resolve before sprint start |
+| MEDIUM | Imprecise phrasing or incomplete enumeration | Recommend improvement |
 | LOW | Style or formatting issue | Optional fix |
 
 ## Output Format
 
-Produce a ReviewReport with:
+Produce a review report with:
 1. Executive summary: overall quality score (0–100)
 2. Per-row flags with severity, dimension, and recommended fix
-3. List of Open Clarifications (unresolved client decisions)
+3. Open Clarifications (unresolved client decisions) — these are internal and
+   are not written into the client workbook
 4. Overall readiness verdict: READY / NEEDS REVISION / NOT READY

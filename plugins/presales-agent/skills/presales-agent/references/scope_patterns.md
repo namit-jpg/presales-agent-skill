@@ -1,7 +1,12 @@
 # Scope Patterns — Module/Sub-Module Reference by Cloud
 
-This file defines the standard module decomposition patterns for each Salesforce Cloud.
-The Scope Agent uses this to generate structurally correct, comprehensive scope matrices.
+This file lists the capabilities typically in scope for each Salesforce Cloud.
+Use it as a completeness checklist when building the BRD — not as the BRD's
+vocabulary. The tables use Salesforce names; in the BRD, Business Areas and
+Requirements are renamed into the client's business language (e.g. "Lead
+Routing" becomes "Sending new enquiries to the right sales team" under "New
+Project Enquiries"), and Salesforce names appear only in Solution Approach.
+See `references/scope_building.md`.
 
 ## Service Cloud
 

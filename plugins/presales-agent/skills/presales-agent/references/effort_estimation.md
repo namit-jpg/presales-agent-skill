@@ -1,69 +1,64 @@
 ---
 skill: effort_estimation
-version: 2.0
+version: 3.0
 description: >
-  Estimates a single effortHours value per scope-matrix row: the human time
-  needed to review, validate, and sign off an AI-agent-assisted build — not
-  traditional unassisted manual-build hours.
+  Estimates the single Effort (Hours) value per BRD requirement: the human time
+  needed to design, review, validate, and sign off an AI-agent-assisted build —
+  not traditional unassisted manual-build hours.
 ---
 
 # Effort Estimation Skill
 
 ## What effortHours represents
 
-Each scope-matrix row carries ONE effort number, not a breakdown by artifact
-type. It estimates the human time to:
+Each requirement carries ONE effort number (Scope of Work column H). It
+estimates the human time to:
 
-1. Review and validate the configuration/code the delivery agents produce,
-2. Run functional and edge-case testing,
-3. Walk the client through UAT and get sign-off.
+1. Confirm the design during the working sessions,
+2. Review and validate the configuration/code the delivery agents produce,
+3. Run functional and edge-case testing,
+4. Walk the client through business testing and get sign-off.
 
-It is deliberately **not** full manual-build effort (design + build + unit
-test with no AI assistance) — that would run several times higher for the
-same scope. If a client engagement is being delivered without AI-agent
-assistance, say so explicitly in the row's technical assumptions rather than
-inflating this number to compensate.
+It is deliberately **not** full manual-build effort. If an engagement is being
+delivered without AI-agent assistance, say so to the user and recalibrate the
+ranges; do not silently inflate individual rows.
+
+This number is visible to the client. It must be defensible from the
+requirement's own description and solution approach.
 
 ## Typical ranges
 
-| Row complexity | effortHours |
+| Requirement complexity | effortHours |
 |---|---|
-| Simple — declarative config, single object, no integration | 2–5h |
-| Medium — cross-object automation, formula/rollup logic, standard integration pattern | 5–10h |
-| Complex — multi-object orchestration, custom Apex, non-trivial integration, one data-migration wave | 10–16h |
-| Exceptionally large (rare) — major integration hub, migration with heavy cleansing | up to 300h — flag these explicitly in Review Comments; they should be uncommon |
+| Simple — standard configuration, one area of the system, no integration | 2–5h |
+| Medium — automation across records, approvals, scheduled logic, file import | 5–10h |
+| Complex — custom code, an integration feed, multi-step approvals with escalation | 10–16h |
+| Exceptionally large (rare) — major integration hub, migration with heavy cleansing | up to 300h — flag in `reviewComments`; should be uncommon |
 
-Keep values moderate. If most rows in a matrix sit above 20h, the sub-module
-is probably too coarse — split it into smaller rows per the decomposition
-rules in `references/scope_building.md`, rather than inflating one number.
-
-## Relationship to artifact counts
-
-The BRD carries artifact counts (16 buckets × Simple/Medium/Complex, template
-columns K–BF). They are **descriptive** — they tell the client how many objects,
-flows, Apex classes, and integrations the build involves.
-
-They are **not** an input to a pricing formula. Do not multiply them by per-item
-rates. The `brd_template.xlsx` file originally shipped with a per-item rate row
-above those columns; the generator clears it, because those rates describe a
-full manual-build model this skill no longer uses.
-
-Counts and effort should still be *coherent*: a row claiming three complex Apex
-classes and 2h of effort is contradictory, and the Step 3 review flags it. Use
-the counts as a sanity check on your estimate, not as its source.
+If most rows sit above 16h, requirements are probably too coarse — split them
+per the decomposition rules in `references/scope_building.md` rather than
+inflating one number.
 
 ## Estimating a row
 
-Given the solution approach already written for the row, ask how much human
-time is needed to review the AI-agent output, test it, and get it signed off.
-Set one direct number.
+Read the row's description and solution approach. Count what has to be built
+and verified (rules, automations, screens, integrations, reports), then ask
+how much human time the review, testing and sign-off of that takes. Set one
+direct number, rounded to the nearest hour.
 
-Scoped manual work with no artifact of its own — workshops, documentation,
-client-side coordination — goes in `miscManualEfforts` (column BG), not folded
-into `effortHours`.
+Workshops, documentation and client coordination specific to a requirement are
+included in its hours — there is no separate misc column. Programme-level work
+(discovery, project management, SIT, UAT, hypercare) is not in any row; it is
+planned in the sprint plan and timeline.
 
-## Grand Total & Sprint Inputs
+## Data migration rows
 
-Sum all row efforts by Module for the Sprint Plan input. Data Load effort is
-estimated and tracked separately from configuration/build effort (see
-`references/sprint_planning.md`) — never folded into a row's effortHours.
+Rows with `classification: "Data Migration"` carry the load, validation and
+reconciliation hours for that group of records. Sprint planning treats their
+total as Data Load effort, separate from build capacity (see
+`references/sprint_planning.md`).
+
+## Totals
+
+The generator totals hours by Business Area on the Effort Summary sheet. The
+sprint plan's `totalGrandEffort` must equal the BRD total.

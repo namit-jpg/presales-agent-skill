@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "presales-agent",
-      "description": "Turns a Salesforce client discovery conversation into a scope matrix, quality review, sprint plan, and timeline — acting as a Certified Technical Architect and Senior Presales Business Analyst. Outputs JSON plus formatted Excel workbooks.",
+      "description": "Turns a Salesforce client discovery conversation into a client-readable BRD (scope of work with solution approach and effort), quality review, sprint plan, and timeline — acting as a Certified Technical Architect and Senior Presales Business Analyst. Outputs JSON plus formatted Excel workbooks.",
       "author": {
         "name": "namit-jpg"
       },

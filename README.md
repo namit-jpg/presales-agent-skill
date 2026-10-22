@@ -16,7 +16,7 @@ you have open:
 | Artefact | Format |
 |---|---|
 | Engagement context (7 discovery dimensions) | JSON |
-| Scope matrix — one row per sub-module, with functional/technical assumptions, solution approach, artifact counts, effort | JSON + XLSX (3 sheets) |
+| BRD — client-readable Scope of Work (one row per requirement: description, information required from the client, solution approach, effort), plus Out of Scope, Business Process Guide and Effort Summary sheets | JSON + XLSX (4 sheets) |
 | Scope review report — 8-dimension gap analysis, severity flags, 0–100 quality score | Markdown |
 | Sprint plan — module efforts, sprint assignment, weekly role allocation | JSON + XLSX |
 | Project timeline — discovery through hypercare | JSON + XLSX |
@@ -96,11 +96,11 @@ If you installed the plugin instead: `claude plugin uninstall presales-agent`.
 Say what you want in plain language:
 
 - `start a new engagement for Contoso Manufacturing`
-- `build a scope matrix for Contoso`
+- `build a BRD for Contoso`
 - `resume Contoso from review`
 - `regenerate xlsx for Contoso`
 
-Claude runs five steps — context elicitation, scope building, review and gap
+Claude runs five steps — context elicitation, BRD building, review and gap
 analysis, sprint planning, completion summary — with a quality gate at each
 boundary. It will not skip the review step, and it stops on CRITICAL flags until
 you acknowledge them.
@@ -119,6 +119,7 @@ plugins/presales-agent/
     SKILL.md                        the workflow
     references/                     sub-skills + estimation knowledge
     schemas/                        Zod schemas the JSON output must match
+    templates/brd_template.xlsx     the BRD layout and styling
     scripts/generate_xlsx.js        JSON → Excel
 ```
 
@@ -131,19 +132,14 @@ them to your own delivery history before quoting a client.
 Engagement outputs are written to your project, never into this repo, and
 `opportunities/` is gitignored so client data does not get committed by accident.
 
-### On the `xlsx` dependency
+### On the Excel dependency
 
-`npm audit` reports two high-severity advisories against `xlsx@0.18.5`
-([prototype pollution](https://github.com/advisories/GHSA-4r6h-8v6p-xvw6),
-[ReDoS](https://github.com/advisories/GHSA-5pgg-2g8v-p4x9)) and says no fix is
-available. That is because SheetJS no longer publishes to the npm registry —
-patched releases are distributed from `cdn.sheetjs.com`.
-
-Both advisories concern *parsing* untrusted spreadsheets. `generate_xlsx.js` only
-writes workbooks from JSON produced earlier in the workflow and never reads a
-third-party file, so the vulnerable code paths are not exercised here. If your
-organisation blocks the advisory regardless, point the dependency at the SheetJS
-CDN build instead.
+The generator uses [`exceljs`](https://www.npmjs.com/package/exceljs). It
+replaced SheetJS (`xlsx@0.18.5`) because SheetJS's free build does not write
+cell styles, so the styled BRD template came out plain, and because the npm
+release of SheetJS carries two unpatched advisories. `exceljs` reads the
+template and writes the populated copy with fills, fonts, wrapping and
+frozen headers intact.
 
 ## Licence
 

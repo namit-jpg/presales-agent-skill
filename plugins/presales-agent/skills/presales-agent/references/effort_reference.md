@@ -2,9 +2,10 @@
 
 ## Row Effort Quick Guide
 
-Full model and reasoning: `references/effort_estimation.md`. Each scope-matrix
-row gets one direct `effortHours` estimate — human review/validation/UAT-sign-off
-time on top of an AI-agent-assisted build, not full manual-build hours.
+Full model and reasoning: `references/effort_estimation.md`. Each BRD
+requirement gets one direct `effortHours` estimate (Scope of Work column H) —
+human design/review/validation/sign-off time on an AI-agent-assisted build,
+not full manual-build hours.
 
 | Row complexity | effortHours |
 |---|---|
@@ -24,4 +25,4 @@ time on top of an AI-agent-assisted build, not full manual-build hours.
 | SA capacity (pre-sprint) | 40h/week | Drops to 24h during build |
 | DS capacity | 10h/week | Throughout project |
 | QA capacity (build) | 24h/week | Ramps to 40h during SIT |
-| Data Load effort | Separate | NOT counted in dev sprint capacity |
+| Data Load effort | Separate | Rows classified "Data Migration"; NOT counted in dev sprint capacity |

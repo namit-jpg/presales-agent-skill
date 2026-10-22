@@ -39,14 +39,22 @@ Capacity per role per sprint:
 ```
 Sprint Duration = 2 weeks
 Effort Per Sprint = Number of Developers × 70h (available dev effort per sprint)
+Grand Total Effort = sum of effortHours across all BRD rows
+Data Load Effort = sum of effortHours on rows with classification "Data Migration"
 Total Dev Effort = Grand Total Effort - Data Load Effort - Shared Activities
 Number of Sprints = CEIL(Total Dev Effort / Effort Per Sprint)
 Balance Effort = (Number of Sprints × Effort Per Sprint) - Total Dev Effort
 ```
 
+`moduleEfforts` is one entry per BRD Business Area (the `module` key holds the
+Business Area name).
+
+Rows whose Information Required depends on a vendor or an unresolved client
+decision (data feeds, ERP mapping, approval matrices) go in the later sprints.
+
 ## Phase Assignment Rules
 
-Assign each Sub-Module to a phase based on:
+Assign each requirement to a phase based on:
 - Foundation items (Org setup, data model, core objects) → Phase 1
 - Process automation, integrations → Phase 1/2
 - Portal, AI/Agentforce, advanced analytics → Phase 2/3

@@ -1,103 +1,115 @@
 ---
 skill: scope_building
-version: 2.0
+version: 3.0
 description: >
-  Produces the BRD — a granular, cell-level requirements matrix, one row per
-  Sub-Module — matching templates/brd_template.xlsx exactly.
+  Produces the BRD — a client-readable Scope of Work, one row per requirement,
+  plus Out of Scope, Business Process Guide, and Effort Summary sheets —
+  matching templates/brd_template.xlsx exactly.
 ---
 
 # BRD Building Skill
 
-## Column Schema — must match templates/brd_template.xlsx exactly
+## Workbook layout — must match templates/brd_template.xlsx exactly
 
-The template file is the source of truth for this layout. Do not add, remove,
-or reorder columns here or in the output; if the format needs to change, change
-the template and update `scripts/generate_xlsx.js` to match.
+The template file is the source of truth. Do not add, remove, or reorder
+columns or sheets; if the format needs to change, change the template and
+update `SHEETS` in `scripts/generate_xlsx.js` to match.
 
-| Col | Field Name | JSON key | Required |
-|-----|-----------|----------|----------|
-| A | Audit Comments | `auditComments` | No |
-| B | BRN | `subBrn` (e.g. `1.1`) | Yes |
-| C | Module/Functional Area | `module` | Yes |
-| D | Sub-Module | `subModule` | Yes |
-| E | Phase | `phase` | Yes |
-| F | Description | `description` | Yes |
-| G | Functional Assumptions | `functionalAssumptions[]` | Yes |
-| H | Technical Assumptions | `technicalAssumptions[]` | Yes |
-| I | Solution Approach | `solutionApproach` | Yes |
-| J | Imp Approach | `impApproach` | Yes |
-| K–BF | Artifact counts, 16 buckets × Simple/Medium/Complex | `artifactCounts` | Yes |
-| BG | Misc (Manual Efforts) for other activities | `miscManualEfforts` | Yes (0 if none) |
-| BH | Efforts (Design, Build, UT) | `effortHours` | Yes |
-| BI | Review Comments | `reviewComments` | No |
+### Sheet 1 — Scope of Work (one row per requirement)
 
-Four further fields — `customerDocRef`, `salesforceSkuName`,
-`isPartOfRequirementDoc`, `classification` — have no template column. Keep them
-in the JSON (the Step 3 review uses them); they are not written to the workbook.
+| Col | Header | JSON key | Audience |
+|-----|--------|----------|----------|
+| A | Requirement ID | `requirementId` ("1.1") | Client |
+| B | Business Area | `businessArea` | Client |
+| C | Sub Business Module | `subBusinessModule` | Client |
+| D | Requirement | `requirement` | Client |
+| E | Requirement Description | `description[]` (bulleted) | Client — business language |
+| F | Information Required from [Client] | `informationRequired[]` (bulleted) | Client |
+| G | Solution Approach | `solutionApproach` | Client IT / architects — Salesforce terms |
+| H | Effort (Hours) | `effortHours` | Client / commercial |
 
-## Solution Approach vs Imp Approach
+### Sheet 2 — Out of Scope
 
-These are two separate columns doing two separate jobs. Do not duplicate one
-into the other.
+Requirement ID | Business Area | Requirement | Not Included in This Scope
+— one line for every row whose `notIncluded[]` is non-empty, in Requirement ID
+order. Rows with nothing excluded are left off.
 
-- **Solution Approach (I)** — WHAT gets built, in Salesforce terms: objects,
-  fields, automation type, licensing-relevant features. 1–3 sentences at
-  scope-matrix altitude, not a low-level design. Patterns:
-  `references/solution_approach_patterns.md`.
-- **Imp Approach (J)** — HOW it gets delivered: sequencing, which sprint,
-  prerequisites, dependencies on other rows or on client-side actions.
+### Sheet 3 — Business Process Guide
 
-## The 16 Artifact Buckets (K–BF)
+Title "[Client] | How the New Process Will Work", a one-sentence
+`processSummary`, the `processSteps[]` table (Step | What Happens | Where the
+Work Takes Place), and the `glossary[]` table (Term | Plain Meaning | Used
+For).
 
-In template column order:
+### Sheet 4 — Effort Summary
 
-1. Objects — 2. Object Automations — 3. Record Types — 4. Page Layouts —
-5. Flows — 6. Trigger — 7. Apex Classes (3) — 8. LWC — 9. Custom UI/UX —
-10. Partner App — 11. Inbound/Outbound APIs — 12. Batch Execution —
-13. Reports — 14. Dashboard — 15. Org Setup — 16. Data Migration
+Requirements and total hours by Business Area, plus a grand total. Computed
+by the generator; nothing to write.
 
-Count each with Simple / Medium / Complex granularity. Every bucket must carry a
-number; 0 is valid, blank is not.
+### Internal JSON fields (never written to the workbook)
 
-**These counts are descriptive, not a pricing formula.** They tell the client
-the shape and volume of the build. They are NOT multiplied by per-item rates to
-derive effort — `effortHours` is estimated directly, per
+`phase`, `salesforceSkuName`, `classification`, `sourceRefs`,
+`reviewComments` — used by the Step 3 review and Step 4 sprint planning.
+
+Writing rules for C–F and the Out of Scope sheet:
+`references/requirement_writing.md`. Boundary patterns by product:
+`references/scope_boundary_patterns.md`.
+
+## Solution Approach (column G)
+
+The one column that speaks Salesforce. 1–3 sentences describing how the
+requirement will be built: the standard features, objects, automation type,
+integration pattern, and licence-relevant capabilities. It is what the
+client's IT team and our delivery team read; the description above it is what
+the business reads. The two must agree — every point in the description must
+be achievable by what the solution approach says, and the solution approach
+must not quietly add scope the description does not promise.
+
+Prefer standard, declarative features; name custom code only where the
+requirement needs it. Patterns: `references/solution_approach_patterns.md`.
+
+## Effort (column H)
+
+One number of hours per requirement. Model and ranges:
 `references/effort_estimation.md`.
 
-### Complexity guide
+## Business Area / Requirement decomposition
 
-- **Simple** — standard OOTB fields, picklists, layouts; flows with 1–3
-  criteria; single-object automations; standard reports with basic filters.
-- **Medium** — cross-object flows, 4–8 criteria; lookup-driven logic; formula
-  fields; multi-layout configurations; screen flows with conditional logic.
-- **Complex** — multi-object orchestration; Apex with async processing or DML
-  chains; LWC with conditional rendering; multi-API integrations with error
-  handling; migration with heavy cleansing.
+1. **Business Area** = a business domain named the way the client talks about
+   it ("New Project Enquiries", "Bids, Quotations and Approvals", "Customer
+   Complaint Handling") — not a Salesforce cloud or object name.
+2. **Requirement** = one capability a business owner can accept or reject on
+   its own. Never combine two capabilities in one row; never split one
+   capability across rows just to keep hours small.
+3. **Requirement ID** = `<area number>.<position>`: 1.1, 1.2 … 2.1 … 5.10.
+   Areas are numbered in the order of the client's process (setup and access
+   first, then customers, then the sales cycle, then post-sale, reporting,
+   data transfer and integrations as their own areas).
+4. Each integration feed or data source the client named gets its own row
+   (e.g. one row per external project database), even when they share a
+   pattern — the client signs off on each separately.
+5. Data migration gets its own Business Area ("Existing Data Transfer"), one
+   row per group of records, with `classification: "Data Migration"`.
+6. Testing, environments and launch go in the first area ("Safe testing and
+   launch of Salesforce").
 
-## Module/Sub-Module Decomposition Rules
+Typical size: a single-region, single-cloud engagement lands at 20–40 rows; a
+multi-region, multi-system one at 60–90.
 
-1. Module = top-level functional domain (e.g., 'Case Management')
-2. Sub-Module = granular capability (e.g., 'Case Creation via WhatsApp')
-3. Each Sub-Module gets its own row — never combine two capabilities in one row
-4. BRN (Business Requirement Number) groups related sub-modules
-5. SUB BRN is a decimal: 1.1, 1.2, 1.3 ... 2.1, 2.2 ... and is what appears in
-   the BRD's BRN column, since it uniquely identifies the row
+## Classification (internal)
 
-## Custom/Config/Integration Classification
+- Config: standard configuration only
+- Custom: Apex, LWC, or custom objects beyond standard
+- Integration: inbound/outbound API, middleware
+- Config+Custom / Config+Integration / Custom+Integration /
+  Config+Custom+Integration: mixed
+- Data Migration: one-time load of existing records (sprint planning treats
+  this effort as Data Load, separate from build capacity)
 
-Retained in the JSON for review purposes (no template column):
+## Salesforce SKU names
 
-- Config: Standard OOTB Salesforce configuration only
-- Custom: Apex, LWC, custom objects beyond OOTB
-- Integration: Outbound/inbound API, middleware
-- Config+Custom: Mixed (most common)
-- Config+Integration: Standard + external connectivity
-- Custom+Integration: Custom code with external systems
-- OOTB+Config: Pure declarative, no Apex
-
-## Salesforce SKU Name Rules
-
-ALWAYS use the correct commercial SKU name. Examples:
+Use the correct commercial SKU name in `salesforceSkuName` and wherever a
+product is named in Solution Approach. See `references/products_catalog.md`.
 - 'Sales Cloud' (not 'CRM' or 'SFDC')
 - 'Service Cloud EE' (not 'Service')
 - 'Field Service Plus' (not 'FSL')
@@ -106,13 +118,6 @@ ALWAYS use the correct commercial SKU name. Examples:
 - 'Digital Engagement' (for WhatsApp/Chat/Social channels)
 - 'Experience Cloud' (for portals and communities)
 
-## Description Writing Standard
-
-Each description must follow this pattern:
-'[Client Name] requires/needs [the system/platform] to [business capability], so that [business outcome].'
-
-Use bullet points for multi-part capabilities. Always include:
-- The channel or trigger (if applicable)
-- The data it captures or processes
-- The downstream handoff
-- The user persona(s) involved
+In the client-facing description, use what the user will see ("the Salesforce
+mobile app", "Slack") rather than SKU names, unless a licence purchase is the
+point being made.

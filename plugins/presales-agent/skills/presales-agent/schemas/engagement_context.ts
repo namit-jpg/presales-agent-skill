@@ -36,6 +36,27 @@ export const BusinessProcessSchema = z.object({
   priority: z.enum(['Phase 1', 'Phase 2', 'Phase 3']).optional(),
 });
 
+// End-to-end walk of the client's new process — feeds the BRD's Business Process Guide.
+export const ProcessStepSchema = z.object({
+  step: z.string(),
+  whatHappens: z.string(),
+  where: z.string(),
+});
+
+// Client acronyms and internal terms in their own words — feeds the BRD glossary.
+export const ClientTermSchema = z.object({
+  term: z.string(),
+  meaning: z.string(),
+  usedFor: z.string().optional(),
+});
+
+// Anything discovery could not answer. Becomes Information Required in the BRD.
+export const OpenQuestionSchema = z.object({
+  question: z.string(),
+  owner: z.string().optional(),     // who at the client should answer
+  relatesTo: z.string().optional(), // business area or process
+});
+
 export const EngagementContextSchema = z.object({
   // Client & Project Identity
   clientName: z.string(),
@@ -52,6 +73,8 @@ export const EngagementContextSchema = z.object({
   businessUnits: z.array(z.string()),
   userPersonas: z.array(PersonaSchema),
   keyProcesses: z.array(BusinessProcessSchema),
+  processSteps: z.array(ProcessStepSchema).default([]),
+  clientTerms: z.array(ClientTermSchema).default([]),
   painPoints: z.array(z.string()),
   kpis: z.array(z.string()),
 
@@ -71,7 +94,9 @@ export const EngagementContextSchema = z.object({
   phasing: z.enum(['Single Phase', 'Phase 1/2', 'Phase 1/2/3']),
   goLiveDate: z.string().optional(),
   goLiveDatePhase1: z.string().optional(),
+  implementationWeeks: z.number().optional(),
   stakeholderDependencies: z.array(z.string()),
+  openQuestions: z.array(OpenQuestionSchema).default([]),
 
   // Metadata
   phase: z.enum(['context', 'scope', 'assumptions', 'review', 'sprint', 'complete']),

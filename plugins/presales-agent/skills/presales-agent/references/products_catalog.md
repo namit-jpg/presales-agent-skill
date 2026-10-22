@@ -37,7 +37,7 @@ The agent uses this to correctly label every scope row.
 ### Experience Cloud
 - **Per-Member Licensing**: Named users, higher cost, more features
 - **Per-Login Licensing**: Anonymous/guest users allowed, lower cost per user
-- ALWAYS confirm which licensing model applies in scope assumptions
+- ALWAYS confirm which licensing model applies; if unconfirmed, raise it as Information Required
 
 ### Revenue Cloud / CPQ
 - Separate managed package from core Salesforce
@@ -48,7 +48,7 @@ The agent uses this to correctly label every scope row.
 - **Agentforce**: Autonomous AI agents (Service Agent, Sales Coach, etc.)
 - **Einstein Predictions**: Predictive scoring, recommendation models
 - **Einstein Copilot**: Embedded AI assistance in Salesforce UI
-- Credit-based consumption model — ALWAYS state in assumptions
+- Credit-based consumption model — ALWAYS state it in the requirement description, and exclude credits beyond those procured
 - No custom model training in standard implementation scope
 
 ### MuleSoft / Integration Cloud

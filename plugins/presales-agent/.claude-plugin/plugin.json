@@ -1,7 +1,7 @@
 {
   "name": "presales-agent",
-  "description": "Salesforce presales documentation workflow — turns a client discovery conversation into a scope matrix, quality review, sprint plan, and timeline, with Excel output.",
-  "version": "1.0.0",
+  "description": "Salesforce presales documentation workflow — turns a client discovery conversation into a client-readable BRD (scope of work with solution approach and effort), quality review, sprint plan, and timeline, with Excel output.",
+  "version": "2.0.0",
   "author": {
     "name": "namit-jpg"
   },
